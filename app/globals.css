@@ -1,0 +1,141 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 240 7% 7%;  /* Midnight Navy #121212 */
+    --foreground: 0 0% 100%;  /* White */
+
+    --card: 240 7% 11%;  /* Slightly lighter than background */
+    --card-foreground: 0 0% 100%;
+
+    --popover: 240 7% 11%;
+    --popover-foreground: 183 100% 98%;
+
+    --primary: 231 41% 48%;  /* Indigo #3F51B5 */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 187 100% 41%;  /* Aqua Blue #00BFCF */
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 240 7% 15%;
+    --muted-foreground: 183 100% 90%;
+
+    --accent: 187 100% 41%;  /* Aqua Blue #00BFCF */
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 240 7% 15%;
+    --input: 240 7% 15%;
+    --ring: 231 41% 48%;  /* Indigo */
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Chess game specific styles */
+.chess-board {
+  @apply aspect-square max-w-[600px] w-full mx-auto;
+}
+
+.chess-square {
+  @apply w-full h-full flex items-center justify-center text-3xl cursor-pointer transition-all duration-200;
+}
+
+.chess-square-light {
+  @apply bg-stone-300;  /* Keeping wooden light color */
+}
+
+.chess-square-dark {
+  @apply bg-stone-600;  /* Keeping wooden dark color */
+}
+
+.chess-piece-white {
+  @apply text-gray-800 drop-shadow-sm font-bold;
+}
+
+.chess-piece-black {
+  @apply text-gray-100 drop-shadow-sm font-bold;
+}
+
+.valid-move-indicator {
+  @apply w-4 h-4 bg-[#00BFCF] rounded-full opacity-60;
+}
+
+.selected-square {
+  @apply ring-4 ring-[#00BFCF];
+}
+
+.game-status {
+  @apply px-3 py-1 rounded text-sm font-semibold;
+}
+
+.status-playing {
+  @apply bg-[#00BFCF] text-white;
+}
+
+.status-check {
+  @apply bg-yellow-500 text-white;
+}
+
+.status-checkmate {
+  @apply bg-red-500 text-white;
+}
+
+.move-history-item {
+  @apply text-sm p-2 bg-[#1a1a1a] rounded flex justify-between;
+}
+
+.player-indicator {
+  @apply flex items-center gap-2 p-2 rounded;
+}
+
+.player-active {
+  @apply bg-[#3F51B5] bg-opacity-20;
+}
+
+.thinking-indicator {
+  @apply text-[#00BFCF] text-sm animate-pulse;
+}

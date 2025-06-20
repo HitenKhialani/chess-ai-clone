@@ -1,0 +1,9 @@
+CREATE TABLE IF NOT EXISTS pgn_puzzles (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  fen TEXT NOT NULL,
+  moves TEXT NOT NULL,
+  themes TEXT,
+  rating INTEGER,
+  source TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+); 

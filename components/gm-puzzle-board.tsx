@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { Chessboard } from 'react-chessboard'
 import { Chess, Square } from 'chess.js'
 import { Button } from '@/components/ui/button'
@@ -29,6 +29,22 @@ export function GMPuzzleBoard({ fen, solutionMoves, onSuccess, onFail, puzzleInd
   const [selectedPiece, setSelectedPiece] = useState<Square | null>(null)
   const [loading, setLoading] = useState(false)
   const [fullSolution, setFullSolution] = useState<string[]>([])
+  const [boardWidth, setBoardWidth] = useState(320)
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (containerRef.current) {
+        const containerWidth = containerRef.current.offsetWidth;
+        setBoardWidth(Math.min(containerWidth, 480));
+      }
+    };
+    
+    window.addEventListener('resize', handleResize);
+    handleResize();
+    
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   console.log('GMPuzzleBoard FEN:', safeFen, 'solutionMoves:', safeMoves);
 
@@ -137,9 +153,9 @@ export function GMPuzzleBoard({ fen, solutionMoves, onSuccess, onFail, puzzleInd
   }
 
   return (
-    <div className="space-y-4 w-full max-w-[480px] mx-auto">
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-sm text-gray-600">Puzzle {puzzleIndex + 1} of {totalPuzzles}</span>
+    <div ref={containerRef} className="w-full flex flex-col items-center space-y-4">
+      <div className="w-full flex items-center justify-between">
+        <span className="text-sm text-gray-400">Puzzle {puzzleIndex + 1} of {totalPuzzles}</span>
         <div className="flex gap-2">
           <Button size="sm" onClick={resetPuzzle} variant="outline">Reset</Button>
           <Button size="sm" onClick={handleShowSolution} variant="secondary">Show Solution</Button>
@@ -148,25 +164,25 @@ export function GMPuzzleBoard({ fen, solutionMoves, onSuccess, onFail, puzzleInd
       <Chessboard
         position={game.fen()}
         onPieceDrop={onDrop}
-        boardWidth={400}
+        boardWidth={boardWidth}
         arePiecesDraggable={!completed && !failed && userTurn}
         boardOrientation="white"
         customDarkSquareStyle={{ backgroundColor: 'var(--board-dark)' }}
         customLightSquareStyle={{ backgroundColor: 'var(--board-light)' }}
-        customBoardStyle={{ borderRadius: 12, boxShadow: '0 2px 16px #0002' }}
+        customBoardStyle={{ borderRadius: '8px', boxShadow: '0 5px 15px rgba(0, 0, 0, 0.5)' }}
       />
-      <div className="flex flex-col items-center mt-2">
+      <div className="flex flex-col items-center mt-2 text-center h-12">
         {completed && (
-          <div className="text-green-600 font-semibold text-lg">Puzzle solved! Loading next...</div>
+          <div className="text-green-500 font-semibold text-lg">Puzzle solved! Loading next...</div>
         )}
         {failed && (
-          <div className="text-red-500 font-semibold text-lg">Incorrect move. Try again!</div>
+          <div className="text-red-500 font-semibold text-lg">Incorrect move. Resetting...</div>
         )}
         {!completed && !failed && !showSolution && (
-          <div className="text-blue-700 font-medium">Your move as White. Finish the game in 5 moves!</div>
+          <div className="text-gray-300 font-medium">Your move as {game.turn() === 'w' ? 'White' : 'Black'}.</div>
         )}
         {showSolution && (
-          <div className="text-white font-medium">
+          <div className="text-white font-medium text-sm">
             Solution:
             <ol className="list-decimal ml-6 mt-1">
               {safeMoves.map((move, idx) => (

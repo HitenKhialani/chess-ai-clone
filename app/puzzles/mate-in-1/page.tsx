@@ -61,38 +61,34 @@ export default function PuzzlesPage() {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-4xl font-bold mb-8">Mate in 1</h1>
-      <div className="flex justify-center mb-4 gap-2">
-        <div className="w-full max-w-xl mx-auto flex flex-col items-center">
-          <div className="w-full flex justify-between items-center mb-2">
-            <span className="text-lg font-semibold">Puzzle {completed ? totalPuzzles : currentIndex + 1} of {totalPuzzles}</span>
-            {completed && <span className="text-green-600 font-bold">Completed!</span>}
-          </div>
-          <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
-            <div className="bg-blue-500 h-2 rounded-full" style={{ width: `${((completed ? totalPuzzles : currentIndex + 1) / totalPuzzles) * 100}%` }}></div>
-          </div>
+      <h1 className="text-2xl sm:text-3xl font-bold mb-4 text-center">Mate in 1</h1>
+      <div className="w-full max-w-md mx-auto">
+        <div className="flex justify-between items-center mb-2 text-sm">
+          <span className="font-semibold">Puzzle {completed ? totalPuzzles : currentIndex + 1} of {totalPuzzles}</span>
+          {completed && <span className="text-green-500 font-bold">Completed!</span>}
         </div>
-      </div>
-      <div className="max-w-xl mx-auto">
+        <div className="w-full bg-gray-700 rounded-full h-2 mb-4">
+          <div className="bg-blue-600 h-2 rounded-full" style={{ width: `${((completed ? totalPuzzles : currentIndex + 1) / totalPuzzles) * 100}%` }}></div>
+        </div>
         <Card className="w-full">
-          <CardHeader>
-            <CardTitle>Mate in 1</CardTitle>
-            <CardDescription>
+          <CardHeader className="text-center p-4">
+            <CardTitle className="text-lg sm:text-xl">Mate in 1</CardTitle>
+            <CardDescription className="text-sm">
               Find the checkmate in a single move.
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-2 sm:p-4">
             {loading ? (
-              <div className="h-[400px] flex items-center justify-center">
+              <div className="h-[320px] sm:h-[400px] flex items-center justify-center">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-400"></div>
               </div>
             ) : error ? (
-              <div className="h-[400px] flex flex-col items-center justify-center gap-4">
+              <div className="h-[320px] sm:h-[400px] flex flex-col items-center justify-center gap-4 text-center">
                 <p className="text-red-400 text-lg font-semibold">{error}</p>
                 <Button onClick={handleRetry} className="bg-purple-600 hover:bg-purple-700 text-white rounded-lg px-6 py-2 font-semibold shadow-md transition-all">Retry Loading Puzzle</Button>
               </div>
             ) : puzzle && !completed ? (
-              <div className="flex flex-col items-center gap-4">
+              <div className="flex flex-col items-center">
                 <GMPuzzleBoard
                   key={currentIndex}
                   fen={puzzle.fen}
@@ -104,10 +100,10 @@ export default function PuzzlesPage() {
                 />
               </div>
             ) : completed ? (
-              <div className="h-[400px] flex flex-col items-center justify-center gap-4">
+              <div className="h-[320px] sm:h-[400px] flex flex-col items-center justify-center gap-4 text-center">
                 <h2 className="text-2xl font-bold text-green-400">Congratulations!</h2>
                 <p className="text-purple-200">You solved all {totalPuzzles} puzzles! 🎉</p>
-                <Button onClick={() => { setCurrentIndex(0); setCompleted(false); }} className="bg-purple-600 hover:bg-purple-700 text-white rounded-lg px-6 py-2 font-semibold shadow-md transition-all">
+                <Button onClick={() => { setCurrentIndex(0); setCompleted(false); }} className="mt-4 bg-purple-600 hover:bg-purple-700 text-white rounded-lg px-6 py-2 font-semibold shadow-md transition-all">
                   Restart Puzzles
                 </Button>
               </div>

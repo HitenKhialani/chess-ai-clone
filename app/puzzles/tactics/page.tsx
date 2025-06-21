@@ -1,135 +1,139 @@
-'use client'
+"use client"
 
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Brain, ArrowLeft, ThumbsUp, AlertCircle } from "lucide-react"
-import Link from "next/link"
-import { PuzzleBoard } from "@/components/puzzle-board"
-import { Toaster } from "sonner"
+import { useState, useEffect } from "react"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { GMPuzzleBoard } from "@/components/gm-puzzle-board"
+import { toast } from "sonner"
 
-// Sample puzzle data - in production this would come from a database
-const samplePuzzle = {
-  fen: "r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 0 1",
-  moves: ["d4", "exd4", "e5", "Ne4", "Qxd4"],
-  type: "Pin",
-  rating: 1500,
-  description: "Find the pin tactic that wins material",
-  solution: "The bishop on c4 pins the f7 pawn to the king, allowing White to win material."
-}
+export default function PuzzlesPage() {
+  const [currentIndex, setCurrentIndex] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const savedIndex = localStorage.getItem('tacticsPuzzleIndex');
+      return savedIndex ? parseInt(savedIndex, 10) : 0;
+    }
+    return 0;
+  });
+  const [puzzle, setPuzzle] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [completed, setCompleted] = useState(false)
+  const [totalPuzzles, setTotalPuzzles] = useState<number>(0)
 
-export default function TacticsPage() {
+  // Save index to localStorage whenever it changes
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('tacticsPuzzleIndex', currentIndex.toString());
+    }
+  }, [currentIndex]);
+
+  // Fetch total puzzle count on mount
+  useEffect(() => {
+    fetch('/api/puzzles/tactics/count')
+      .then(res => res.json())
+      .then(data => setTotalPuzzles(data.count))
+      .catch(() => setTotalPuzzles(0))
+  }, [])
+
+  const loadPuzzle = async (idx: number) => {
+    setLoading(true)
+    setError(null)
+    try {
+      const response = await fetch(`/api/puzzles/tactics/by-index/${idx}`)
+      if (!response.ok) throw new Error('No puzzle found for this index.')
+      const data = await response.json()
+      setPuzzle(data)
+    } catch (err: any) {
+      // If loading fails, try the next puzzle
+      if (idx + 1 < totalPuzzles) {
+        setCurrentIndex(idx + 1)
+      } else {
+        setError('No more puzzles available.')
+        setPuzzle(null)
+        setCompleted(true)
+      }
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (!completed && totalPuzzles > 0) loadPuzzle(currentIndex)
+  }, [currentIndex, completed, totalPuzzles])
+
+  const handleNextPuzzle = () => {
+    if (currentIndex + 1 < totalPuzzles) {
+      setCurrentIndex(currentIndex + 1)
+    } else {
+      setCompleted(true)
+      toast.success('You solved all the tactics puzzles! Explore more parts of this website.')
+    }
+  }
+
+  const handleRetry = () => {
+    loadPuzzle(currentIndex)
+  }
+
+  const handleRestart = () => {
+    setCurrentIndex(0);
+    setCompleted(false);
+  }
+
   return (
-    <div className="min-h-screen bg-[#121212] py-12">
-      <Toaster />
-      <div className="container px-4 md:px-6">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-2 mb-4">
-            <Link href="/puzzles" className="text-[#00BFCF] hover:text-[#00BFCF]/80">
-              <ArrowLeft className="h-5 w-5" />
-            </Link>
-            <h1 className="text-3xl font-bold text-[#FFFFFF]">Tactical Patterns</h1>
+    <div className="container mx-auto p-4">
+      <h1 className="text-4xl font-bold mb-8">Tactics Puzzles</h1>
+      <div className="flex justify-center mb-4 gap-2">
+        <div className="w-full max-w-xl mx-auto flex flex-col items-center">
+          <div className="w-full flex justify-between items-center mb-2">
+            <span className="text-lg font-semibold">Puzzle {completed ? totalPuzzles : currentIndex + 1} of {totalPuzzles}</span>
+            {completed && <span className="text-green-600 font-bold">Completed!</span>}
           </div>
-          <p className="text-[#CFFAFE] max-w-2xl">
-            Master essential tactical patterns through carefully selected positions. Each puzzle is designed to reinforce pattern recognition and calculation skills.
-          </p>
+          <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
+            <div className="bg-blue-500 h-2 rounded-full" style={{ width: `${(totalPuzzles > 0 ? (completed ? totalPuzzles : currentIndex + 1) / totalPuzzles : 0) * 100}%` }}></div>
+          </div>
         </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Puzzle Section */}
-          <div className="lg:col-span-2">
-            <Card className="bg-[#1a1a1a] border-[#3F51B5]">
-              <CardContent className="p-6">
-                {/* Puzzle Info */}
-                <div className="flex items-center gap-2 mb-4">
-                  <Badge variant="outline" className="text-[#00BFCF] border-[#00BFCF]">
-                    {samplePuzzle.type}
-                  </Badge>
-                  <Badge variant="outline" className="text-[#CFFAFE] border-[#3F51B5]">
-                    Rating: {samplePuzzle.rating}
-                  </Badge>
-                </div>
-
-                {/* Puzzle Board */}
-                <PuzzleBoard
-                  fen={samplePuzzle.fen}
-                  moves={samplePuzzle.moves}
-                  onComplete={() => console.log('Puzzle completed')}
-                  onFail={() => console.log('Puzzle failed')}
+      </div>
+      <div className="max-w-xl mx-auto">
+        <Card className="w-full">
+          <CardHeader>
+            <CardTitle>Tactics Puzzles</CardTitle>
+            <CardDescription>
+              Practice tactics to win material or create threats.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <div className="h-[400px] flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-400"></div>
+              </div>
+            ) : error ? (
+              <div className="h-[400px] flex flex-col items-center justify-center gap-4">
+                <p className="text-red-400 text-lg font-semibold">{error}</p>
+                <Button onClick={handleRetry} className="bg-purple-600 hover:bg-purple-700 text-white rounded-lg px-6 py-2 font-semibold shadow-md transition-all">Retry Loading Puzzle</Button>
+              </div>
+            ) : puzzle && !completed ? (
+              <div className="flex flex-col items-center gap-4">
+                <GMPuzzleBoard
+                  key={currentIndex}
+                  fen={puzzle.fen}
+                  solutionMoves={puzzle.moves || puzzle.solutionMoves}
+                  onSuccess={handleNextPuzzle}
+                  onFail={handleRetry}
+                  puzzleIndex={currentIndex}
+                  totalPuzzles={totalPuzzles}
                 />
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Progress Card */}
-            <Card className="bg-[#1a1a1a] border-[#3F51B5]">
-              <CardContent className="p-6">
-                <h3 className="text-xl font-semibold text-[#FFFFFF] mb-4">Your Progress</h3>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-[#CFFAFE]">Puzzles Solved</span>
-                    <span className="text-[#00BFCF] font-semibold">24/150</span>
-                  </div>
-                  <div className="w-full bg-[#121212] rounded-full h-2">
-                    <div className="bg-[#00BFCF] h-2 rounded-full" style={{ width: '16%' }}></div>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-[#CFFAFE]">Current Streak</span>
-                    <span className="text-[#00BFCF] font-semibold">7</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Stats Card */}
-            <Card className="bg-[#1a1a1a] border-[#3F51B5]">
-              <CardContent className="p-6">
-                <h3 className="text-xl font-semibold text-[#FFFFFF] mb-4">Statistics</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 bg-[#121212] rounded-lg">
-                    <div className="text-[#00BFCF] text-2xl font-bold">85%</div>
-                    <div className="text-[#CFFAFE] text-sm">Accuracy</div>
-                  </div>
-                  <div className="p-4 bg-[#121212] rounded-lg">
-                    <div className="text-[#00BFCF] text-2xl font-bold">1650</div>
-                    <div className="text-[#CFFAFE] text-sm">Puzzle Rating</div>
-                  </div>
-                  <div className="p-4 bg-[#121212] rounded-lg">
-                    <div className="text-[#00BFCF] text-2xl font-bold">42</div>
-                    <div className="text-[#CFFAFE] text-sm">Best Streak</div>
-                  </div>
-                  <div className="p-4 bg-[#121212] rounded-lg">
-                    <div className="text-[#00BFCF] text-2xl font-bold">312</div>
-                    <div className="text-[#CFFAFE] text-sm">Total Solved</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Tips Card */}
-            <Card className="bg-[#1a1a1a] border-[#3F51B5]">
-              <CardContent className="p-6">
-                <h3 className="text-xl font-semibold text-[#FFFFFF] mb-4">Pin Tactics Tips</h3>
-                <div className="space-y-3">
-                  <div className="flex items-start gap-2">
-                    <ThumbsUp className="h-5 w-5 text-[#00BFCF] mt-1" />
-                    <p className="text-[#CFFAFE]">Look for pieces that can be pinned against more valuable pieces or the king</p>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <ThumbsUp className="h-5 w-5 text-[#00BFCF] mt-1" />
-                    <p className="text-[#CFFAFE]">Consider which pieces can create absolute pins (against the king) vs relative pins</p>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <AlertCircle className="h-5 w-5 text-[#00BFCF] mt-1" />
-                    <p className="text-[#CFFAFE]">Watch out for defensive resources that can break the pin</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+              </div>
+            ) : completed ? (
+              <div className="h-[400px] flex flex-col items-center justify-center gap-4">
+                <h2 className="text-2xl font-bold text-green-400">Congratulations!</h2>
+                <p className="text-purple-200">You solved all {totalPuzzles} puzzles! 🎉</p>
+                <Button onClick={handleRestart} className="bg-purple-600 hover:bg-purple-700 text-white rounded-lg px-6 py-2 font-semibold shadow-md transition-all">
+                  Restart Puzzles
+                </Button>
+              </div>
+            ) : null}
+          </CardContent>
+        </Card>
       </div>
     </div>
   )

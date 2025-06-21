@@ -400,53 +400,28 @@ export default function AnalysisPage() {
 
   const handleLoadPgn = async (pgnId: number) => {
     try {
-      console.log(`Attempting to load PGN with ID: ${pgnId}`);
       const response = await axios.get(`/api/pgns/${pgnId}`);
-      const selectedPgnContent = response.data.content;
-      console.log("Received PGN content for loading:", selectedPgnContent);
-      console.log(`Frontend: PGN content length received: ${selectedPgnContent ? selectedPgnContent.length : 0}`);
-
-      // Validate PGN with pgn-parser first
-      let parsed;
-      try {
-        parsed = pgnParser.parse(selectedPgnContent, { startRule: 'games' });
-      } catch (err) {
-        console.error('PGN failed to parse with @mliebelt/pgn-parser:', err);
-        alert('Failed to load PGN: PGN is not valid.');
+      const pgnContent = response.data.content;
+  
+      if (!pgnContent) {
+        alert('PGN content is empty.');
         return;
-      }
-      if (!parsed || !Array.isArray(parsed) || parsed.length === 0) {
-        console.error('PGN failed to parse with @mliebelt/pgn-parser: No games found.');
-        alert('Failed to load PGN: PGN is not valid.');
-        return;
-      }
-
-      // Use the sanitizer to clean the PGN
-      let sanitizedPgn;
-      try {
-        sanitizedPgn = sanitizePGN(selectedPgnContent);
-      } catch (sanitizeError) {
-        console.error('PGN sanitization failed:', sanitizeError);
-        alert('Failed to load PGN: Invalid PGN format.');
-        return;
-      }
-
-      // Load the sanitized PGN into chess.js
-      const newGame = new Chess();
-      try {
-        newGame.loadPgn(sanitizedPgn);
-      } catch (loadError) {
-        console.error("Chess.js failed to load PGN:", loadError);
-        throw new Error("Failed to load PGN: Chess.js could not parse the PGN content.");
       }
       
-      const moves = newGame.history();
+      // Sanitize the PGN content before loading
+      const sanitizedPgn = sanitizePGN(pgnContent);
+
+      const newGameTemp = new Chess();
+      newGameTemp.loadPgn(sanitizedPgn);
+      
+      const moves = newGameTemp.history();
       setMoveStack(moves);
       setRedoStack([]);
-      // useEffect will handle setting game, fen, pgn
+      
+      alert('PGN loaded successfully!');
     } catch (error) {
-      console.error('Error loading PGN in handleLoadPgn:', error);
-      alert('Failed to load PGN. Please try again.');
+      console.error('Error loading PGN:', error);
+      alert('Failed to load PGN.');
     }
   };
 
@@ -540,9 +515,11 @@ export default function AnalysisPage() {
                   <div className="flex flex-col gap-4">
                     <div className="flex gap-2">
                       <Input
+                        type="text"
                         placeholder="Enter filename"
                         value={pgnFilename}
                         onChange={(e) => setPgnFilename(e.target.value)}
+                        className="flex-grow"
                       />
                       <Button onClick={handleSavePgn}>
                         <Database className="mr-2 h-4 w-4" />
@@ -552,23 +529,20 @@ export default function AnalysisPage() {
                     <div className="flex gap-2">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="outline">
-                            <Database className="mr-2 h-4 w-4" />
-                            Load Saved PGN
+                          <Button variant="outline" className="w-full">
+                            <Database className="mr-2 h-4 w-4" /> Load Saved PGN
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                          {savedPgns.map((pgn) => (
-                            <DropdownMenuItem
-                              key={pgn.id}
-                              onClick={() => {
-                                console.log("DropdownMenuItem clicked for PGN:", pgn);
-                                handleLoadPgn(pgn.id);
-                              }}
-                            >
-                              {pgn.name} ({new Date(pgn.created_at).toLocaleDateString()})
-                            </DropdownMenuItem>
-                          ))}
+                        <DropdownMenuContent className="w-full">
+                          {savedPgns.length > 0 ? (
+                            savedPgns.map((p) => (
+                              <DropdownMenuItem key={p.id} onSelect={() => handleLoadPgn(p.id)}>
+                                {p.name} ({new Date(p.created_at).toLocaleDateString()})
+                              </DropdownMenuItem>
+                            ))
+                          ) : (
+                            <DropdownMenuItem disabled>No saved PGNs</DropdownMenuItem>
+                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>

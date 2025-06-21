@@ -47,18 +47,18 @@ export function ChessBoard({ fen, solution, onSolved }: ChessBoardProps) {
     if (!piece) return ""
 
     const symbols: { [key: string]: string } = {
-      K: "54",
-      Q: "55",
-      R: "56",
-      B: "57",
-      N: "58",
-      P: "59",
-      k: "5a",
-      q: "5b",
-      r: "5c",
-      b: "5d",
-      n: "5e",
-      p: "5f",
+      K: "\u2654",
+      Q: "\u2655",
+      R: "\u2656",
+      B: "\u2657",
+      N: "\u2658",
+      P: "\u2659",
+      k: "\u265a",
+      q: "\u265b",
+      r: "\u265c",
+      b: "\u265d",
+      n: "\u265e",
+      p: "\u265f",
     }
 
     return symbols[piece] || piece
@@ -198,4 +198,4 @@ export function ChessBoard({ fen, solution, onSolved }: ChessBoardProps) {
       </div>
     </div>
   )
-} 
+}

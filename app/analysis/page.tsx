@@ -19,8 +19,7 @@ import { sanitizePGN, isValidPGN } from "@/lib/pgnSanitizer"
 import { GrandmasterInfo } from '@/components/GrandmasterInfo'
 import { Switch } from "@/components/ui/switch"
 
-// Set axios base URL for backend API calls
-axios.defaults.baseURL = 'http://localhost:5000';
+axios.defaults.baseURL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
 
 // Define a type for moves in the stack
 type MoveRecord = string; // Storing SAN notation for moves

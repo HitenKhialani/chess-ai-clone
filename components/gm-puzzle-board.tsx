@@ -27,6 +27,8 @@ export function GMPuzzleBoard({ fen, solutionMoves, onSuccess, onFail, puzzleInd
   const [showSolution, setShowSolution] = useState(false)
   const [solutionText, setSolutionText] = useState('')
   const [selectedPiece, setSelectedPiece] = useState<Square | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [fullSolution, setFullSolution] = useState<string[]>([])
 
   console.log('GMPuzzleBoard FEN:', safeFen, 'solutionMoves:', safeMoves);
 
@@ -112,10 +114,13 @@ export function GMPuzzleBoard({ fen, solutionMoves, onSuccess, onFail, puzzleInd
       toast.info('Solution: ' + safeMoves.join(' '), { duration: 6000 })
     } else {
       // Fetch Stockfish solution from backend
+      setLoading(true)
       try {
-        const res = await fetch(`http://localhost:5000/api/stockfish/solution?fen=${encodeURIComponent(safeFen)}&moves=5`)
-        const data = await res.json()
-        if (data.solution && data.solution.length > 0) {
+        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+        const res = await fetch(`${backendUrl}/api/stockfish/solution?fen=${encodeURIComponent(safeFen)}&moves=5`)
+        if (res.ok) {
+          const data = await res.json()
+          setFullSolution(data.solution)
           setSolutionText(data.solution.join(' '))
           toast.info('Stockfish Solution: ' + data.solution.join(' '), { duration: 6000 })
         } else {
@@ -125,6 +130,8 @@ export function GMPuzzleBoard({ fen, solutionMoves, onSuccess, onFail, puzzleInd
       } catch (err) {
         setSolutionText('Error fetching solution.')
         toast.error('Error fetching solution.')
+      } finally {
+        setLoading(false)
       }
     }
   }

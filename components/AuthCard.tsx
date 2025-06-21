@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import axios from 'axios';
 
 export default function AuthCard() {
   const [isLogin, setIsLogin] = useState(true);
@@ -10,25 +11,24 @@ export default function AuthCard() {
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
 
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+    const url = isLogin ? `${backendUrl}/api/users/login` : `${backendUrl}/api/users/signup`;
     setMessage('');
 
-    const url = isLogin ? 'http://localhost:5000/api/users/login' : 'http://localhost:5000/api/users/signup';
     const body = isLogin ? { email, password } : { username, email, password };
 
     try {
-      const response = await fetch(url, {
-        method: 'POST',
+      const res = await axios.post(url, body, {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(body),
       });
 
-      const data = await response.json();
+      const data = res.data;
 
-      if (response.ok) {
+      if (res.status === 200) {
         setMessage(isLogin ? 'Login successful!' : 'Signup successful!');
         if (data.token) {
           localStorage.setItem('token', data.token);

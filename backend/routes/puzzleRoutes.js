@@ -103,4 +103,26 @@ router.get('/pgn/count', (req, res) => {
   res.json({ count: total });
 });
 
+// Route to get a pin puzzle by index
+router.get('/pin/by-index/:index', (req, res) => {
+  let index = parseInt(req.params.index, 10);
+  const total = db.prepare('SELECT COUNT(*) as count FROM pin_puzzles').get().count;
+  if (isNaN(index) || total === 0) {
+    return res.status(400).json({ error: 'Invalid index or no pin puzzles available' });
+  }
+  index = ((index % total) + total) % total; // wrap around
+  const puzzle = db.prepare('SELECT * FROM pin_puzzles LIMIT 1 OFFSET ?').get(index);
+  if (!puzzle) {
+    return res.status(404).json({ error: 'No pin puzzle found at this index' });
+  }
+  puzzle.moves = puzzle.moves.split(' ');
+  res.json(puzzle);
+});
+
+// Route to get the total number of pin puzzles
+router.get('/pin/count', (req, res) => {
+  const total = db.prepare('SELECT COUNT(*) as count FROM pin_puzzles').get().count;
+  res.json({ count: total });
+});
+
 module.exports = router;

@@ -1,0 +1,140 @@
+diff --git a/hooks/useStockfish.js b/hooks/useStockfish.js
+new file mode 100644
+index 0000000..1111111
+--- /dev/null
++++ b/hooks/useStockfish.js
+@@
++import { useEffect, useRef, useCallback } from 'react';
++
++/**
++ * useStockfish
++ * Lightweight React hook to interact with Stockfish WASM running in a Web Worker.
++ *
++ * @param {Function} onBestMove - callback(bestMove: string) -> void
++ *        Fires when engine emits a 'bestmove' line.
++ *
++ * Usage:
++ *   const { setPosition, go } = useStockfish((move) => { ... });
++ *   setPosition('position startpos moves e2e4 e7e5');
++ *   go({ depth: 12 });
++ */
++export default function useStockfish(onBestMove) {
++  const workerRef = useRef(null);
++
++  // boot engine once
++  useEffect(() => {
++    // path assumes /public/engine/stockfish.js
++    workerRef.current = new Worker('/engine/stockfish.js');
++    workerRef.current.postMessage('uci');
++
++    workerRef.current.onmessage = (e) => {
++      const text = e.data;
++      if (text.startsWith('bestmove')) {
++        const best = text.split(' ')[1];
++        onBestMove?.(best);
++      }
++    };
++
++    return () => workerRef.current.terminate();
++  }, [onBestMove]);
++
++  const send = useCallback((cmd) => {
++    workerRef.current?.postMessage(cmd);
++  }, []);
++
++  const setPosition = useCallback((uci) => {
++    send(uci.startsWith('position') ? uci : `position fen ${uci}`);
++  }, [send]);
++
++  const go = useCallback(({ depth = 12 } = {}) => {
++    send(`go depth ${depth}`);
++  }, [send]);
++
++  return { send, setPosition, go };
++}
++
+diff --git a/components/StockfishBoard.jsx b/components/StockfishBoard.jsx
+new file mode 100644
+index 0000000..2222222
+--- /dev/null
++++ b/components/StockfishBoard.jsx
+@@
++/**
++ * StockfishBoard.jsx
++ * Self‑contained chessboard component that plays against Stockfish in‑browser.
++ * Dependencies: chess.js, react-chessboard, hooks/useStockfish.js
++ */
++
++import { Chess } from 'chess.js';
++import { Chessboard } from 'react-chessboard';
++import { useState, useCallback } from 'react';
++import useStockfish from '../hooks/useStockfish';
++
++export default function StockfishBoard() {
++  const game = useState(() => new Chess())[0];
++  const [, setFen] = useState(game.fen());
++  const [thinking, setThinking] = useState(false);
++
++  const { setPosition, go } = useStockfish((bestMove) => {
++    if (bestMove && game.move(bestMove, { sloppy: true })) {
++      setFen(game.fen());
++      setThinking(false);
++    }
++  });
++
++  const onPieceDrop = useCallback(
++    (sourceSquare, targetSquare) => {
++      const move = {
++        from: sourceSquare,
++        to: targetSquare,
++        promotion: 'q',
++      };
++      const result = game.move(move);
++      if (result) {
++        setFen(game.fen());
++        setThinking(true);
++        const historyUci = game.history({ verbose: false }).join(' ');
++        setPosition('position startpos moves ' + historyUci);
++        go({ depth: 12 });
++        return true;
++      }
++      return false;
++    },
++    [game, go, setPosition]
++  );
++
++  return (
++    <div className="flex flex-col items-center gap-4">
++      <Chessboard
++        position={game.fen()}
++        onPieceDrop={onPieceDrop}
++        arePiecesDraggable={!thinking}
++        boardOrientation="white"
++      />
++      {thinking && <p className="text-purple-600">Stockfish is thinking…</p>}
++    </div>
++  );
++}
++
+diff --git a/README.md b/README.md
+index e69de29..3333333 100644
+--- a/README.md
++++ b/README.md
+@@
++# Stockfish Integration
++
++This branch / patch integrates **Stockfish 16 WASM** so the site can run a Grand‑master‑strength engine _entirely in the browser_.
++
++## Quick start
++
++```bash
++# one‑time
++curl -L https://cdn.jsdelivr.net/npm/stockfish@16/stockfish.js -o public/engine/stockfish.js
++npm i chess.js react-chessboard
++
++# run
++npm run dev
++```
++
++Open <http://localhost:3000> and play a move — Stockfish replies automatically.
++

@@ -42,6 +42,7 @@ function ReviewPageContent() {
   useEffect(() => {
     async function fetchReview() {
       if (!moves.length) return;
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
       // Generate FENs for each move
       const chess = new Chess();
       const fens: string[] = [];
@@ -49,17 +50,33 @@ function ReviewPageContent() {
         fens.push(chess.fen());
         chess.move(move);
       }
-      // Call backend for each FEN in parallel
-      const reviewResults = await Promise.all(
-        fens.map(fen =>
-          fetch('http://localhost:5000/api/analysis/analyze', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ fen, grandmaster: 'Carlsen' }), // Change grandmaster as needed
-          }).then(res => res.json())
-        )
-      );
-      setReview(reviewResults);
+      try {
+        const reviewResults = await Promise.all(
+          fens.map(async fen => {
+            const res = await fetch(`${backendUrl}/api/analysis/analyze`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ fen, grandmaster: 'Carlsen' }),
+            });
+            if (!res.ok) {
+              throw new Error(`API error: ${res.status}`);
+            }
+            try {
+              return await res.json();
+            } catch {
+              throw new Error('Invalid JSON from backend');
+            }
+          })
+        );
+        setReview(reviewResults);
+      } catch (err) {
+        setReview([]);
+        let message = 'Failed to fetch review';
+        if (err && typeof err === 'object' && 'message' in err) {
+          message = (err as any).message;
+        }
+        alert(message);
+      }
     }
     fetchReview();
   }, [moves]);

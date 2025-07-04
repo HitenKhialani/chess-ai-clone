@@ -10,7 +10,7 @@
     "backend": "node backend/server.js",
     "dev-full": "npm-run-all --parallel dev backend",
     "db:setup": "node backend/scripts/import-tactics-puzzles.js && node backend/scripts/import-endgame-puzzles.js && node backend/scripts/import-fork-puzzles.js && node backend/scripts/import-random-puzzles.js && node backend/scripts/import-pin-puzzles.js && node backend/scripts/import-pgn-puzzles.js",
-    "postbuild": "chmod +x public/engine/stockfish"
+    "postbuild": "curl -L -o public/engine/stockfish.zip https://stockfishchess.org/files/stockfish_16_linux_x64_avx2.zip && unzip -j public/engine/stockfish.zip -d public/engine/ && mv public/engine/stockfish* public/engine/stockfish && chmod +x public/engine/stockfish"
   },
   "dependencies": {
     "@emotion/is-prop-valid": "latest",

@@ -1,26 +1,35 @@
-const { spawn } = require('child_process');
-const path = require('path');
-const fs = require('fs');
+const Stockfish = require('stockfish');
 const { Chess } = require('chess.js');
 const GameAnalysis = require('../models/GameAnalysis');
 
 class ChessAnalysisService {
   constructor() {
     this.stockfish = null;
+    this.isReady = false;
+    this.initPromise = null;
     this.initializeStockfish();
   }
 
   initializeStockfish() {
-    const isWin = process.platform === 'win32';
-    const stockfishPath = isWin
-      ? path.join(__dirname, '../../public/engine/stockfish.exe')
-      : path.join(__dirname, '../../public/engine/stockfish');
-    console.log('Stockfish binary path:', stockfishPath);
-    console.log('Stockfish exists:', fs.existsSync(stockfishPath));
-    this.stockfish = spawn(stockfishPath);
-    this.stockfish.on('error', (error) => {
-      console.error('Failed to start Stockfish:', error);
+    this.stockfish = Stockfish();
+    this.isReady = false;
+    this.initPromise = new Promise((resolve) => {
+      this.stockfish.onmessage = (line) => {
+        if (line.includes('uciok')) {
+          this.stockfish.postMessage('isready');
+        } else if (line.includes('readyok')) {
+          this.isReady = true;
+          resolve();
+        }
+      };
+      this.stockfish.postMessage('uci');
     });
+  }
+
+  async ensureReady() {
+    if (!this.isReady) {
+      await this.initPromise;
+    }
   }
 
   async analyzePosition(fen, grandmaster) {
@@ -30,7 +39,6 @@ class ChessAnalysisService {
       if (pgnAnalysis) {
         return pgnAnalysis;
       }
-
       // If no PGN match found, use Stockfish
       return await this.analyzeWithStockfish(fen, grandmaster);
     } catch (error) {
@@ -76,32 +84,36 @@ class ChessAnalysisService {
   }
 
   async analyzeWithStockfish(fen, grandmaster) {
+    await this.ensureReady();
     return new Promise((resolve, reject) => {
       let bestMove = null;
       let evaluation = 0;
-
-      this.stockfish.stdin.write(`position fen ${fen}\n`);
-      this.stockfish.stdin.write('go depth 20\n');
-
-      this.stockfish.stdout.on('data', (data) => {
-        const output = data.toString();
-        
-        if (output.includes('bestmove')) {
-          bestMove = output.split('bestmove ')[1].split(' ')[0];
+      let receivedBestMove = false;
+      this.stockfish.onmessage = (output) => {
+        if (output.startsWith('info') && output.includes('score cp')) {
+          const match = output.match(/score cp (-?\d+)/);
+          if (match) {
+            evaluation = parseInt(match[1], 10) / 100;
+          }
+        }
+        if (output.startsWith('bestmove')) {
+          bestMove = output.split(' ')[1];
+          receivedBestMove = true;
           resolve({
             suggestedMove: bestMove,
             justification: this.generateJustification(bestMove, grandmaster, 'STOCKFISH'),
             analysisSource: 'STOCKFISH',
             evaluation: evaluation
           });
-        } else if (output.includes('cp ')) {
-          evaluation = parseInt(output.split('cp ')[1].split(' ')[0]) / 100;
         }
-      });
-
-      this.stockfish.stdout.on('error', (error) => {
-        reject(error);
-      });
+      };
+      this.stockfish.postMessage(`position fen ${fen}`);
+      this.stockfish.postMessage('go depth 20');
+      setTimeout(() => {
+        if (!receivedBestMove) {
+          reject(new Error('Stockfish analysis timed out'));
+        }
+      }, 15000);
     });
   }
 

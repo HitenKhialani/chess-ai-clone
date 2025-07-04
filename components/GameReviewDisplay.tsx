@@ -118,32 +118,8 @@ export const GameReviewDisplay: React.FC<GameReviewDisplayProps> = ({ review, su
           </div>
         ))}
       </div>
-      {/* Move-by-move list, collapsible on mobile */}
-      <div className={`transition-all duration-500 ease-in-out ${collapsed ? 'translate-x-full opacity-0 pointer-events-none absolute' : 'opacity-100 relative'} md:opacity-100 md:relative md:translate-x-0`}> 
-        <ol className="space-y-2 mt-4">
-          {review.map((move, idx) => (
-            <li
-              key={idx}
-              className={`p-3 rounded-xl flex flex-col shadow-sm bg-white/80 font-sans transition-all duration-500 ease-in-out animate-fade-in-move`}
-              style={{ animationDelay: `${idx * 60}ms` }}
-            >
-              <div className="flex items-center gap-2">
-                <span className="font-mono text-gray-500">{idx + 1}.</span>
-                <span className="font-semibold text-gray-900 font-sans">{move.move}</span>
-                <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-bold font-sans
-                  ${move.type === 'Best' ? 'bg-green-100 text-green-700 border border-green-300' :
-                    move.type === 'Inaccuracy' ? 'bg-yellow-100 text-yellow-800 border border-yellow-300' :
-                    move.type === 'Mistake' ? 'bg-orange-100 text-orange-700 border border-orange-300' :
-                    move.type === 'Blunder' ? 'bg-red-100 text-red-700 border border-red-300' :
-                    'bg-gray-100 text-gray-700 border border-gray-300'}
-                `}>{move.type}</span>
-                <span className="ml-2 text-xs text-gray-500 font-sans">Eval: {move.evaluation}</span>
-              </div>
-              <div className="text-xs text-gray-600 mt-1 font-sans">{move.explanation}</div>
-            </li>
-          ))}
-        </ol>
-      </div>
+      {/* Move-by-move list removed for compactness */}
+      
       <style jsx>{`
         @keyframes fade-in-move {
           from { opacity: 0; transform: translateY(10px); }

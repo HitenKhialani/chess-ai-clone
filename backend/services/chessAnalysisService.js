@@ -16,6 +16,7 @@ class ChessAnalysisService {
       ? path.join(__dirname, '../../public/engine/stockfish.exe')
       : path.join(__dirname, '../../public/engine/stockfish');
     console.log('Stockfish binary path:', stockfishPath);
+    console.log('Stockfish exists:', fs.existsSync(stockfishPath));
     this.stockfish = spawn(stockfishPath);
     this.stockfish.on('error', (error) => {
       console.error('Failed to start Stockfish:', error);

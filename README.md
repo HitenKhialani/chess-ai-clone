@@ -1,0 +1,2 @@
+# endgame
+ai chess trainer

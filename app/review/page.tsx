@@ -42,13 +42,24 @@ function ReviewPageContent() {
   useEffect(() => {
     async function fetchReview() {
       if (!moves.length) return;
-      const res = await fetch('/api/analyze-game', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ moves }),
-      });
-      const data = await res.json();
-      setReview(data);
+      // Generate FENs for each move
+      const chess = new Chess();
+      const fens: string[] = [];
+      for (const move of moves) {
+        fens.push(chess.fen());
+        chess.move(move);
+      }
+      // Call backend for each FEN in parallel
+      const reviewResults = await Promise.all(
+        fens.map(fen =>
+          fetch('http://localhost:5000/api/analysis/analyze', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fen, grandmaster: 'Carlsen' }), // Change grandmaster as needed
+          }).then(res => res.json())
+        )
+      );
+      setReview(reviewResults);
     }
     fetchReview();
   }, [moves]);
@@ -120,34 +131,64 @@ function ReviewPageContent() {
                     `} />
                   </div>
                   <ol className="space-y-2 relative z-10">
-                    {review.map((move, idx) => (
-                      <li
-                        key={idx}
-                        ref={el => { moveRefs.current[idx] = el; }}
-                        className={`p-3 rounded-xl flex flex-col shadow-sm font-sans transition-all duration-500 ease-in-out animate-fade-in-move
-                          ${theme === 'dark' ? 'bg-[#232c43]/80' : 'bg-white/80'}`}
-                        style={{ animationDelay: `${idx * 60}ms` }}
-                      >
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono text-gray-500">{idx + 1}.</span>
-                          <span className={`font-semibold font-sans ${theme === 'dark' ? 'text-blue-100' : 'text-gray-900'}`}>{move.move}</span>
-                          <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-bold font-sans
-                            ${move.type === 'Best' ? (theme === 'dark' ? 'bg-green-900 text-green-200 border border-green-700' : 'bg-green-100 text-green-700 border border-green-300') :
-                              move.type === 'Inaccuracy' ? (theme === 'dark' ? 'bg-yellow-900 text-yellow-200 border border-yellow-700' : 'bg-yellow-100 text-yellow-800 border border-yellow-300') :
-                              move.type === 'Mistake' ? (theme === 'dark' ? 'bg-orange-900 text-orange-200 border border-orange-700' : 'bg-orange-100 text-orange-700 border border-orange-300') :
-                              move.type === 'Blunder' ? (theme === 'dark' ? 'bg-red-900 text-red-200 border border-red-700' : 'bg-red-100 text-red-700 border border-red-300') :
-                              (theme === 'dark' ? 'bg-gray-800 text-gray-200 border border-gray-700' : 'bg-gray-100 text-gray-700 border border-gray-300')}
-                          `}>{move.type}</span>
-                          <span className={`ml-2 text-xs font-sans ${theme === 'dark' ? 'text-blue-200' : 'text-gray-500'}`}>Eval: {move.evaluation}</span>
-                        </div>
-                        <div className={`text-xs mt-1 font-sans ${theme === 'dark' ? 'text-blue-200' : 'text-gray-600'}`}>{move.explanation}</div>
-                        {move.bestMove && move.bestMove !== move.move && (
-                          <div className="text-xs text-blue-600 mt-1 font-sans">
-                            Best move: <span className="font-mono">{move.bestMove}</span>
+                    {review.map((moveReview, idx) => {
+                      // Defensive: get move notation
+                      const moveNotation = moves[idx] || '';
+                      // Categorize move if not present from backend
+                      let type = moveReview.type;
+                      let explanation = moveReview.explanation;
+                      // If backend does not provide type, categorize here
+                      if (!type) {
+                        // Try to use evaluation difference if available
+                        const evalBefore = idx > 0 && review[idx - 1] && review[idx - 1].evaluation ? parseFloat(review[idx - 1].evaluation) : 0;
+                        const evalAfter = moveReview.evaluation ? parseFloat(moveReview.evaluation) : 0;
+                        const loss = Math.abs(evalBefore - evalAfter);
+                        if (moveReview.bestMove && moveReview.bestMove === moveNotation) {
+                          type = 'Best';
+                          explanation = 'Excellent move.';
+                        } else if (loss < 0.3) {
+                          type = 'Best';
+                          explanation = 'Excellent move.';
+                        } else if (loss < 1.0) {
+                          type = 'Inaccuracy';
+                          explanation = 'Could be improved.';
+                        } else if (loss < 2.0) {
+                          type = 'Mistake';
+                          explanation = 'A better move was available.';
+                        } else {
+                          type = 'Blunder';
+                          explanation = 'This move loses significant advantage.';
+                        }
+                      }
+                      return (
+                        <li
+                          key={idx}
+                          ref={el => { moveRefs.current[idx] = el; }}
+                          className={`p-3 rounded-xl flex flex-col shadow-sm font-sans transition-all duration-500 ease-in-out animate-fade-in-move
+                            ${theme === 'dark' ? 'bg-[#232c43]/80' : 'bg-white/80'}`}
+                          style={{ animationDelay: `${idx * 60}ms` }}
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono text-gray-500">{idx + 1}.</span>
+                            <span className={`font-semibold font-sans ${theme === 'dark' ? 'text-blue-100' : 'text-gray-900'}`}>{moveNotation}</span>
+                            <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-bold font-sans
+                              ${type === 'Best' ? 'bg-green-100 text-green-700 border border-green-300' :
+                                type === 'Inaccuracy' ? 'bg-yellow-100 text-yellow-800 border border-yellow-300' :
+                                type === 'Mistake' ? 'bg-orange-100 text-orange-700 border border-orange-300' :
+                                type === 'Blunder' ? 'bg-red-100 text-red-700 border border-red-300' :
+                                'bg-gray-100 text-gray-700 border border-gray-300'}
+                            `}>{type || 'Eval'}</span>
+                            <span className="ml-2 text-xs text-gray-500 font-sans">Eval: {moveReview.evaluation}</span>
                           </div>
-                        )}
-                      </li>
-                    ))}
+                          <div className="text-xs text-gray-600 mt-1 font-sans">{explanation}</div>
+                          {moveReview.bestMove && moveReview.bestMove !== moveNotation && (
+                            <div className="text-xs text-blue-600 mt-1 font-sans">
+                              Best move: <span className="font-mono">{moveReview.bestMove}</span>
+                            </div>
+                          )}
+                        </li>
+                      );
+                    })}
                   </ol>
                 </div>
               </div>

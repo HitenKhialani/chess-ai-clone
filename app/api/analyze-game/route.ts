@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { spawn } from 'child_process';
+// @ts-ignore
+const StockfishImport = require('stockfish');
+const Stockfish = StockfishImport.default || StockfishImport;
 
 // Use dynamic import for chess.js since it's a CommonJS module
 let Chess: any = null;
@@ -11,47 +13,46 @@ async function getChess() {
   return Chess;
 }
 
-// Helper to get Stockfish evaluation and best move for a FEN
+// Helper to get Stockfish evaluation and best move for a FEN using WASM/JS
 function getStockfishEvalAndBestMove(fen: string): Promise<{ evaluation: number, bestMove: string }> {
   return new Promise((resolve, reject) => {
-    const stockfish = spawn('stockfish');
+    const engine = Stockfish();
     let evaluation = 0;
     let bestMove = '';
     let resolved = false;
+    let ready = false;
 
-    stockfish.stdin.write(`position fen ${fen}\n`);
-    stockfish.stdin.write('go depth 15\n');
-
-    stockfish.stdout.on('data', (data) => {
-      const output = data.toString();
-      if (output.includes('score cp')) {
-        const match = output.match(/score cp (-?\d+)/);
+    engine.onmessage = (line: string) => {
+      if (typeof line !== 'string') return;
+      if (line.includes('uciok')) {
+        engine.postMessage('isready');
+      } else if (line.includes('readyok')) {
+        engine.postMessage(`position fen ${fen}`);
+        engine.postMessage('go depth 15');
+        ready = true;
+      } else if (line.startsWith('info') && line.includes('score cp')) {
+        const match = line.match(/score cp (-?\d+)/);
         if (match) {
-          evaluation = parseInt(match[1]) / 100;
+          evaluation = parseInt(match[1], 10) / 100;
         }
-      }
-      if (output.includes('bestmove') && !resolved) {
-        const match = output.match(/bestmove ([a-h][1-8][a-h][1-8][qrbn]?)/);
+      } else if (line.startsWith('bestmove')) {
+        const match = line.match(/bestmove ([a-h][1-8][a-h][1-8][qrbn]?)/);
         if (match) {
           bestMove = match[1];
         }
-        resolved = true;
-        stockfish.kill();
-        resolve({ evaluation, bestMove });
+        if (!resolved) {
+          resolved = true;
+          resolve({ evaluation, bestMove });
+        }
       }
-    });
-    stockfish.on('error', (err) => {
+    };
+    engine.postMessage('uci');
+    setTimeout(() => {
       if (!resolved) {
         resolved = true;
-        reject(err);
+        reject(new Error('Stockfish analysis timed out'));
       }
-    });
-    stockfish.on('exit', () => {
-      if (!resolved) {
-        resolved = true;
-        resolve({ evaluation, bestMove });
-      }
-    });
+    }, 15000);
   });
 }
 
@@ -100,7 +101,7 @@ export async function POST(req: NextRequest) {
         moveType = 'Best';
         moveExplanation = 'Excellent move.';
       }
-      const reviewMove = {
+      const reviewMove: any = {
         move,
         type: moveType,
         explanation: moveExplanation,

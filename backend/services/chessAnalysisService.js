@@ -15,7 +15,7 @@ class ChessAnalysisService {
     const stockfishPath = isWin
       ? path.join(__dirname, '../../public/engine/stockfish.exe')
       : path.join(__dirname, '../../public/engine/stockfish');
-    console.log('Using Stockfish binary at:', stockfishPath);
+    console.log('Stockfish binary path:', stockfishPath);
     this.stockfish = spawn(stockfishPath);
     this.stockfish.on('error', (error) => {
       console.error('Failed to start Stockfish:', error);

@@ -1,35 +1,23 @@
-import { NextRequest, NextResponse } from 'next/server';
-// @ts-ignore
-const StockfishImport = require('stockfish');
-const Stockfish = StockfishImport.default || StockfishImport;
+const express = require('express');
+const router = express.Router();
+const Stockfish = require('stockfish');
+const { Chess } = require('chess.js');
 
-// Use dynamic import for chess.js since it's a CommonJS module
-let Chess: any = null;
-async function getChess() {
-  if (!Chess) {
-    const mod = await import('chess.js');
-    Chess = mod.Chess;
-  }
-  return Chess;
-}
-
-// Helper to get Stockfish evaluation and best move for a FEN using WASM/JS
-function getStockfishEvalAndBestMove(fen: string): Promise<{ evaluation: number, bestMove: string }> {
+// Helper to get Stockfish evaluation and best move for a FEN
+function getStockfishEvalAndBestMove(fen) {
   return new Promise((resolve, reject) => {
     const engine = Stockfish();
     let evaluation = 0;
     let bestMove = '';
     let resolved = false;
-    let ready = false;
 
-    engine.onmessage = (line: string) => {
+    engine.onmessage = (line) => {
       if (typeof line !== 'string') return;
       if (line.includes('uciok')) {
         engine.postMessage('isready');
       } else if (line.includes('readyok')) {
         engine.postMessage(`position fen ${fen}`);
         engine.postMessage('go depth 15');
-        ready = true;
       } else if (line.startsWith('info') && line.includes('score cp')) {
         const match = line.match(/score cp (-?\d+)/);
         if (match) {
@@ -57,7 +45,7 @@ function getStockfishEvalAndBestMove(fen: string): Promise<{ evaluation: number,
 }
 
 // Classify move type based on evaluation loss
-function classifyMove(loss: number) {
+function classifyMove(loss) {
   if (loss < 0.3) return { type: 'Best', explanation: 'Excellent move.' };
   if (loss < 0.7) return { type: 'Average', explanation: 'Solid move, but not the best.' };
   if (loss < 1.0) return { type: 'Inaccuracy', explanation: 'Could be improved.' };
@@ -65,14 +53,14 @@ function classifyMove(loss: number) {
   return { type: 'Blunder', explanation: 'This move loses significant advantage.' };
 }
 
-export async function POST(req: NextRequest) {
+// POST /api/analyze-game
+router.post('/', async (req, res) => {
   try {
-    const { moves } = await req.json();
+    const { moves } = req.body;
     if (!moves || !Array.isArray(moves) || moves.length === 0) {
-      return NextResponse.json([], { status: 200 });
+      return res.json([]);
     }
-    const ChessClass = await getChess();
-    const chess = new ChessClass();
+    const chess = new Chess();
     const analysis = [];
 
     for (let i = 0; i < moves.length; i++) {
@@ -83,14 +71,11 @@ export async function POST(req: NextRequest) {
       try {
         moveResult = chess.move(move);
       } catch (err) {
-        console.error('Invalid move in analysis:', { moveIndex: i, move, fenBefore, moves });
-        return NextResponse.json({ error: `Invalid move at index ${i}: ${move}`, details: { move, fenBefore, moveIndex: i } }, { status: 400 });
+        return res.status(400).json({ error: `Invalid move at index ${i}: ${move}` });
       }
       if (!moveResult) {
-        console.error('Invalid move in analysis:', { moveIndex: i, move, fenBefore, moves });
-        return NextResponse.json({ error: `Invalid move at index ${i}: ${move}`, details: { move, fenBefore, moveIndex: i } }, { status: 400 });
+        return res.status(400).json({ error: `Invalid move at index ${i}: ${move}` });
       }
-      // Construct UCI notation for the user's move
       const userMoveUci = moveResult.from + moveResult.to + (moveResult.promotion || '');
       const fenAfter = chess.fen();
       const { evaluation: evalAfter } = await getStockfishEvalAndBestMove(fenAfter);
@@ -102,7 +87,7 @@ export async function POST(req: NextRequest) {
         moveType = 'Best';
         moveExplanation = 'Excellent move.';
       }
-      const reviewMove: any = {
+      const reviewMove = {
         move,
         type: moveType,
         explanation: moveExplanation,
@@ -114,10 +99,11 @@ export async function POST(req: NextRequest) {
       analysis.push(reviewMove);
     }
 
-    return NextResponse.json(analysis);
+    return res.json(analysis);
   } catch (error) {
     console.error('Game review error:', error);
-    const message = (typeof error === 'object' && error && 'message' in error) ? (error as any).message : String(error);
-    return NextResponse.json({ error: 'Invalid request', details: message }, { status: 500 });
+    return res.status(500).json({ error: 'Invalid request', details: error.message || String(error) });
   }
-}
+});
+
+module.exports = router; 

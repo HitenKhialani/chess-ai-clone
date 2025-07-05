@@ -3,6 +3,7 @@ import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'rec
 import { useRouter } from 'next/navigation';
 import GameReviewDisplay from './GameReviewDisplay';
 import { Chess } from 'chess.js';
+import { analyzeMovesLocally } from '../app/lib/stockfish';
 
 interface ReviewMove {
   move: string;
@@ -58,6 +59,16 @@ export const GameReview: React.FC<GameReviewProps> = ({ moveHistory, onClose, sh
         if (!res.ok) {
           setError(typeof data === 'string' ? data : data.error || 'Failed to analyze game');
           (window as any).lastGameReviewError = data;
+          // Try local analysis as fallback
+          try {
+            const chessJsModule = await import('chess.js');
+            const ChessClass = chessJsModule.Chess;
+            const localReview = await analyzeMovesLocally(moveHistory, ChessClass);
+            setReview(localReview);
+            setError(null);
+          } catch (localErr) {
+            setError('Failed to analyze game (both backend and local analysis failed)');
+          }
           return;
         }
         setReview(data);
@@ -95,7 +106,18 @@ export const GameReview: React.FC<GameReviewProps> = ({ moveHistory, onClose, sh
         }
         // ---
       })
-      .catch((err) => setError(err.message))
+      .catch(async (err) => {
+        // Backend fetch failed, try local analysis
+        try {
+          const chessJsModule = await import('chess.js');
+          const ChessClass = chessJsModule.Chess;
+          const localReview = await analyzeMovesLocally(moveHistory, ChessClass);
+          setReview(localReview);
+          setError(null);
+        } catch (localErr) {
+          setError('Failed to analyze game (both backend and local analysis failed)');
+        }
+      })
       .finally(() => setLoading(false));
   }, [moveHistory, shouldSave]);
 

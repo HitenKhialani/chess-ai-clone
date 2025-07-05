@@ -118,7 +118,23 @@ export const GameReviewDisplay: React.FC<GameReviewDisplayProps> = ({ review, su
           </div>
         ))}
       </div>
-      {/* Move-by-move list removed for compactness */}
+      {/* Move-by-move list */}
+      <div className="mt-4">
+        <div className="font-semibold mb-2 text-sm text-gray-500">Move-by-Move Review</div>
+        <div className="divide-y divide-gray-200">
+          {review.map((move, idx) => (
+            <div key={idx} className="flex items-center py-2 text-sm">
+              <span className="w-8 text-gray-400">{idx + 1}.</span>
+              <span className="w-16 font-mono text-gray-700">{move.move}</span>
+              <span className={`w-20 font-bold ${typeColors[move.type] || ''} flex items-center gap-1`}>
+                {typeIcons[move.type] || ''} {move.type}
+              </span>
+              <span className="flex-1 text-gray-500 ml-2">{move.explanation}</span>
+              <span className="w-12 text-right text-gray-400">{move.evaluation}</span>
+            </div>
+          ))}
+        </div>
+      </div>
       
       <style jsx>{`
         @keyframes fade-in-move {

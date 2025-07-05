@@ -7,6 +7,7 @@ const db = require('./db'); // Import the SQLite database connection
 const { sanitizePGN, extractPGNMetadata } = require('./utils/pgnSanitizer'); // Import PGN sanitizer
 const pgnRoutes = require('./routes/pgnRoutes');
 const puzzleRoutes = require('./routes/puzzleRoutes');
+const analyzeGameRoute = require('./routes/analyzeGame');
 
 const app = express();
 
@@ -33,6 +34,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/analysis', analysisRoutes);
 app.use('/api/pgns', pgnRoutes);
 app.use('/api/puzzles', puzzleRoutes);
+app.use('/api/analyze-game', analyzeGameRoute);
 
 // SQLite PGN Routes
 app.post('/api/pgns', (req, res) => {

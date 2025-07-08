@@ -1,0 +1,42 @@
+[Event "Tactical Puzzle #1 - Fork"]
+[Site "Generated"]
+[Result "1-0"]
+[FEN "r1bqk1nr/pppp1ppp/2n5/2b1P3/8/2N5/PPP2PPP/R1BQKBNR w KQkq - 0 1"]
+1. Qg4 g6 2. Qc4 Bb6 3. Nd5 Nxe5 4. Qc3 d6 5. Nxb6
+
+[Event "Puzzle #2"]
+[Site "Generated"]
+[Result "1-0"]
+[FEN "r2qk2r/ppp2ppp/2n5/3bp3/3P4/2PB1N2/PP3PPP/R1BQ1RK1 w kq - 0 1"]
+1. dxe5 Bxf3 2. Qxf3 Nxe5 3. Re1
+
+
+[Event "Puzzle #3"]
+[Site "Generated"]
+[Result "1-0"]
+[FEN "2rq1rk1/pp2bppp/2n1b3/3n4/3P4/2P1BN2/PP3PPP/2RR2K1 w - - 0 1"]
+1. c4 Nxe3 2. fxe3 Bf6 3. d5
+
+[Event "Tactical Puzzle #4 - Back Rank Mate"]
+[Site "Generated"]
+[Result "1-0"]
+[FEN "3r2k1/pp3ppp/8/8/8/8/PPP2PPP/3RR1K1 w - - 0 1"]
+1. Rxd8 
+
+[Event "Tactical Puzzle #5 - Skewer"]
+[Site "Generated"]
+[Result "1-0"]
+[FEN "6k1/1p3ppp/p1q5/8/8/1Q6/PP3PPP/6K1 w - - 0 1"]
+1. Qb6 Qxb6 2. b3
+
+[Event "Tactical Puzzle #6 - Deflection"]
+[Site "Generated"]
+[Result "1-0"]
+[FEN "r2q1rk1/ppp2ppp/2n2n2/3Np3/3P4/2P5/PP3PPP/R1BQ1RK1 w - - 0 1"]
+1. Bg5 exd4 2. Qf3 Ne5 3. Nxf6+ gxf6 4. Qg3+
+
+[Event "Tactical Puzzle #7 - Zwischenzug (Intermediate Move)"]
+[Site "Generated"]
+[Result "1-0"]
+[FEN "r1bqk2r/pp3ppp/2n2n2/2bpP3/8/2N2N2/PPP2PPP/R1BQ1RK1 w kq - 0 1"]
+1. exf6 Qxf6 2. Qxd5 Be7 3. Bg5

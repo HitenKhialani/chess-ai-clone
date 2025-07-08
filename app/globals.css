@@ -1,0 +1,195 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: #0A1A2F;
+    --card: #14263F;
+    --accent: #C2A3FF;
+    --primary-text: #D8E6FF;
+    --secondary-text: #A9C1E8;
+    --shadow: #1E3A5C;
+    --border: #1E3A5C;
+    --radius: 0.5rem;
+    --board-light: #f0d9b5;
+    --board-dark: #b58863;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    background: var(--background);
+    color: var(--secondary-text);
+    min-height: 100vh;
+    position: relative;
+    font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    color: var(--primary-text);
+  }
+}
+
+.card {
+  background: var(--card);
+  color: var(--secondary-text);
+  border: 1px solid var(--shadow);
+  border-radius: var(--radius);
+  box-shadow: 0 4px 24px 0 var(--shadow);
+}
+
+.button, .btn {
+  background: var(--card);
+  color: var(--primary-text);
+  border-radius: var(--radius);
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.button:hover, .btn:hover, .glow-accent, .active {
+  box-shadow: 0 0 12px 2px var(--accent);
+  color: var(--accent);
+  transform: scale(1.05);
+}
+
+a {
+  color: var(--secondary-text);
+  transition: color 0.2s;
+}
+a.active, a:focus, a:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0A1A2F;
+}
+::-webkit-scrollbar-thumb {
+  background: #1E3A5C;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #C2A3FF;
+}
+
+/* Card shadow utility with lavender glow */
+.card-shadow {
+  box-shadow: 0 4px 32px 0 var(--shadow);
+}
+
+/* Button glow utility */
+.btn-glow {
+  box-shadow: 0 0 8px var(--accent), 0 0 16px var(--shadow);
+}
+
+/* Chess game specific styles */
+.chess-board {
+  @apply aspect-square max-w-[600px] w-full mx-auto;
+}
+.chess-square {
+  @apply w-full h-full flex items-center justify-center text-3xl cursor-pointer transition-all duration-200;
+}
+.chess-square-light {
+  @apply bg-stone-300;
+}
+.chess-square-dark {
+  @apply bg-stone-600;
+}
+.chess-piece-white {
+  @apply text-gray-800 drop-shadow-sm font-bold;
+}
+.chess-piece-black {
+  @apply text-gray-100 drop-shadow-sm font-bold;
+}
+.valid-move-indicator {
+  @apply w-4 h-4 bg-[#C2A3FF] rounded-full opacity-60;
+}
+.selected-square {
+  @apply ring-4 ring-[#C2A3FF];
+}
+
+/* Krishna image specific styles */
+.krishna-image {
+  filter: drop-shadow(0 4px 8px #C2A3FF44);
+}
+.krishna-image-glow {
+  position: relative;
+}
+.krishna-image-glow::before {
+  content: '';
+  position: absolute;
+  inset: -10px;
+  background: radial-gradient(circle, rgba(194,163,255,0.18) 0%, transparent 70%);
+  border-radius: inherit;
+  z-index: -1;
+}
+
+[data-theme="light"] {
+  --background: #F4D6C6;
+  --card: #FCE8DC;
+  --primary-text: #1E1E1E;
+  --secondary-text: #4A4A4A;
+  --accent: #D2693F;
+  --shadow: rgba(0, 0, 0, 0.1);
+  --border: #E0B6A0;
+  --radius: 0.5rem;
+  --footer-text: #3E2F2A;
+  --footer-link: #9C5C3B;
+  --move-panel-bg: #FCE8DC;
+  --move-panel-text: #1E1E1E;
+  --board-light: #f7ecd0;
+  --board-dark: #c2a477;
+}
+
+[data-theme="light"] body {
+  background: var(--background);
+  color: var(--primary-text);
+}
+[data-theme="light"] h1, [data-theme="light"] h2, [data-theme="light"] h3, [data-theme="light"] h4, [data-theme="light"] h5, [data-theme="light"] h6 {
+  color: var(--primary-text);
+}
+[data-theme="light"] .card {
+  background: var(--card);
+  color: var(--primary-text);
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 24px 0 var(--shadow);
+}
+[data-theme="light"] .button, [data-theme="light"] .btn {
+  background: var(--accent);
+  color: #fff;
+}
+[data-theme="light"] .button:hover, [data-theme="light"] .btn:hover, [data-theme="light"] .glow-accent, [data-theme="light"] .active {
+  box-shadow: 0 0 12px 2px var(--accent);
+  color: #fff;
+  background: #B5532A;
+}
+[data-theme="light"] .move-history-panel, [data-theme="light"] .bot-message-panel {
+  background: var(--move-panel-bg) !important;
+  color: var(--move-panel-text) !important;
+}
+[data-theme="light"] .footer {
+  color: var(--footer-text);
+}
+[data-theme="light"] .footer a {
+  color: var(--footer-link);
+}
+
+[data-theme="light"] .peer[data-state="checked"] {
+  background: var(--accent) !important;
+}
+[data-theme="light"] .peer[data-state="unchecked"] {
+  background: #f5e1d6 !important;
+  border: 1.5px solid var(--border) !important;
+}
+[data-theme="light"] .peer .radix-switch-thumb {
+  background: #fff !important;
+  box-shadow: 0 2px 6px 0 rgba(210, 105, 63, 0.10);
+}
+[data-theme="light"] label[for="voice-toggle"] {
+  color: var(--primary-text) !important;
+  font-weight: 500;
+  text-shadow: 0 1px 2px #fff4;
+}

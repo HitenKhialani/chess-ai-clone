@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS user_time_log (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL,
+  date TEXT NOT NULL, -- YYYY-MM-DD
+  seconds INTEGER NOT NULL,
+  FOREIGN KEY (user_id) REFERENCES users(id)
+); 

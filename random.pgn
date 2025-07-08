@@ -1,0 +1,30 @@
+[SetUp "1"]
+[FEN "4r1k1/5ppp/8/8/8/4Q3/PPP2PPP/5RK1 w - - 0 1"]
+[PlyCount "1"]
+[Comment "1-move puzzle: White wins the rook"]
+1. Qxe8+ 1-0
+
+[SetUp "1"]
+[FEN "r1b1kbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3"]
+[PlyCount "2"]
+[Comment "2-move puzzle: White wins the queen"]
+1. Nxe5 Nxe5 2. d4 1-0
+
+[SetUp "1"]
+[FEN "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 1"]
+[PlyCount "1"]
+[Comment "1-move puzzle: White develops a piece"]
+1. Nf3 1-0
+
+[SetUp "1"]
+[FEN "r1bqkbnr/ppp2ppp/2n5/3pp3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 0 1"]
+[PlyCount "3"]
+[Comment "3-move puzzle: White wins a pawn"]
+1. Nxe5 Nxe5 2. d4 Nc6 3. exd5 1-0
+
+[SetUp "1"]
+[FEN "r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 0 1"]
+[PlyCount "1"]
+[Comment "1-move puzzle: White forks king and queen"]
+1. Nd4 1-0
+

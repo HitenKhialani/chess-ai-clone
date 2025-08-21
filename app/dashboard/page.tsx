@@ -250,7 +250,7 @@ export default function DashboardPage() {
                 <input
                   type="text"
                   defaultValue={user?.username || ''}
-                  className="w-full px-4 py-3 bg-[#16213e] border border-[var(--border)] rounded-lg text-[var(--card-foreground)] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 bg-[var(--input)] border border-[var(--border)] rounded-lg text-[var(--card-foreground)] placeholder-[var(--muted-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)] focus:border-transparent"
                 />
               </div>
               <div>
@@ -258,20 +258,20 @@ export default function DashboardPage() {
                 <input
                   type="email"
                   defaultValue={user?.email || ''}
-                  className="w-full px-4 py-3 bg-[#16213e] border border-[var(--border)] rounded-lg text-[var(--card-foreground)] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 bg-[var(--input)] border border-[var(--border)] rounded-lg text-[var(--card-foreground)] placeholder-[var(--muted-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)] focus:border-transparent"
                 />
               </div>
               <div className="flex space-x-2 pt-4">
                 <Button 
                   onClick={() => setActiveMode('profile')}
-                  className="bg-[var(--primary)] hover:bg-[var(--primary)] text-[var(--card-foreground)]"
+                  className="bg-[var(--primary)] hover:opacity-90 text-[var(--primary-foreground)]"
                 >
                   Save Changes
                 </Button>
                 <Button 
                   onClick={() => setActiveMode('profile')}
                   variant="outline"
-                  className="border-[var(--border)] text-[var(--muted-foreground)] hover:bg-[var(--secondary)] hover:text-[var(--card-foreground)]"
+                  className="border-[var(--border)] text-[var(--muted-foreground)] hover:bg-[var(--secondary)] hover:text-[var(--secondary-foreground)]"
                 >
                   Cancel
                 </Button>
@@ -287,36 +287,36 @@ export default function DashboardPage() {
               <p className="text-[var(--muted-foreground)]">Manage your account settings</p>
             </div>
             <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 rounded-lg bg-[#16213e]">
+              <div className="flex items-center justify-between p-4 rounded-lg bg-[var(--card)] border border-[var(--border)]">
                 <div>
                   <h4 className="font-medium text-[var(--card-foreground)]">Theme</h4>
                   <p className="text-sm text-[var(--muted-foreground)]">Switch between light and dark mode</p>
                 </div>
-                <Button variant="outline" className="border-[var(--border)] text-[var(--muted-foreground)] hover:bg-[var(--secondary)] hover:text-[var(--card-foreground)]">
+                <Button variant="outline" className="border-[var(--border)] text-[var(--muted-foreground)] hover:bg-[var(--secondary)] hover:text-[var(--secondary-foreground)]">
                   <Settings className="w-4 h-4 mr-2" />
                   Light Mode
                 </Button>
               </div>
-              <div className="flex items-center justify-between p-4 rounded-lg bg-[#16213e]">
+              <div className="flex items-center justify-between p-4 rounded-lg bg-[var(--card)] border border-[var(--border)]">
                 <div>
                   <h4 className="font-medium text-[var(--card-foreground)]">Notifications</h4>
                   <p className="text-sm text-[var(--muted-foreground)]">Manage your notification preferences</p>
                 </div>
-                <Button variant="outline" className="border-[var(--border)] text-[var(--muted-foreground)] hover:bg-[var(--secondary)] hover:text-[var(--card-foreground)]">
+                <Button variant="outline" className="border-[var(--border)] text-[var(--muted-foreground)] hover:bg-[var(--secondary)] hover:text-[var(--secondary-foreground)]">
                   Configure
                 </Button>
               </div>
               <div className="flex space-x-2 pt-4">
                 <Button 
                   onClick={() => setActiveMode('profile')}
-                  className="bg-[var(--primary)] hover:bg-[var(--primary)] text-[var(--card-foreground)]"
+                  className="bg-[var(--primary)] hover:opacity-90 text-[var(--primary-foreground)]"
                 >
                   Save Settings
                 </Button>
                 <Button 
                   onClick={() => setActiveMode('profile')}
                   variant="outline"
-                  className="border-[var(--border)] text-[var(--muted-foreground)] hover:bg-[var(--secondary)] hover:text-[var(--card-foreground)]"
+                  className="border-[var(--border)] text-[var(--muted-foreground)] hover:bg-[var(--secondary)] hover:text-[var(--secondary-foreground)]"
                 >
                   Back to Profile
                 </Button>
@@ -328,31 +328,17 @@ export default function DashboardPage() {
         return (
           <>
             {/* Profile Information Card */}
-            <div className={`border rounded-2xl shadow-2xl p-6 mb-8 transition-transform duration-300 ease-out hover:-translate-y-1 hover:shadow-2xl ${
-              theme === 'light' 
-                ? 'bg-[var(--card)] border-[#E5E7EB]' 
-                : 'bg-[#0f0f23] border-[#16213e]'
-            }`}>
+            <div className={"border rounded-2xl shadow-2xl p-6 mb-8 transition-transform duration-300 ease-out hover:-translate-y-1 hover:shadow-2xl bg-[var(--card)] border-[var(--border)]"}>
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center space-x-4">
-                  <div className={`w-16 h-16 rounded-full flex items-center justify-center text-xl font-bold ${
-                    theme === 'light' 
-                      ? 'bg-gradient-to-r from-[#D97706] to-[#F59E0B] text-[var(--card-foreground)]' 
-                      : 'bg-gradient-to-r from-blue-600 to-purple-600 text-[var(--card-foreground)]'
-                  }`}>
+                  <div className={`w-16 h-16 rounded-full flex items-center justify-center text-xl font-bold bg-[var(--primary)] text-[var(--primary-foreground)]`}>
                     {user?.username?.charAt(0).toUpperCase() || 'U'}
                   </div>
                   <div>
-                    <h2 className={`text-2xl font-bold ${
-                      theme === 'light' ? 'text-[#1A1A1A]' : 'text-[var(--accent-foreground)]'
-                    }`}>{user?.username || 'User'}</h2>
-                    <p className={`${
-                      theme === 'light' ? 'text-[#666666]' : 'text-[var(--muted-foreground)]'
-                    }`}>{user?.email || 'user@example.com'}</p>
+                    <h2 className={`text-2xl font-bold text-[var(--card-foreground)]`}>{user?.username || 'User'}</h2>
+                    <p className={`text-[var(--muted-foreground)]`}>{user?.email || 'user@example.com'}</p>
                     <div className="flex items-center space-x-2 mt-1">
-                      <div className={`flex items-center text-sm ${
-                        theme === 'light' ? 'text-[#666666]' : 'text-[var(--muted-foreground)]'
-                      }`}>
+                      <div className={`flex items-center text-sm text-[var(--muted-foreground)]`}>
                         <Calendar className="w-4 h-4 mr-1" />
                         Member since {new Date().toLocaleDateString()}
                       </div>
@@ -362,13 +348,7 @@ export default function DashboardPage() {
                 <div className="flex space-x-2">
                   <Button 
                     variant="outline" 
-                    className={`${
-                      theme === 'light' 
-                        ? 'border-[#D1D5DB] text-[#1A1A1A] hover:bg-[#F3F4F6] hover:text-[#D97706]' 
-                        : 'border-[var(--border)] text-[var(--muted-foreground)] hover:bg-[var(--secondary)] hover:text-[var(--accent-foreground)]'
-                    } ${
-                      activeMode === 'edit' ? 'bg-[var(--primary)] text-[var(--accent-foreground)] border-blue-600' : ''
-                    }`}
+                    className={`border-[var(--border)] text-[var(--muted-foreground)] hover:bg-[var(--secondary)] hover:text-[var(--secondary-foreground)] ${activeMode === 'edit' ? 'bg-[var(--primary)] text-[var(--primary-foreground)]' : ''}`}
                     onClick={() => setActiveMode('edit')}
                   >
                     <Edit className="w-4 h-4 mr-2" />
@@ -380,79 +360,41 @@ export default function DashboardPage() {
 
             {/* Metrics Overview */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              <div className={`border rounded-xl p-6 text-center ${
-                theme === 'light' 
-                  ? 'bg-[var(--card)] border-[#E5E7EB]' 
-                  : 'bg-[#0f0f23] border-[#16213e]'
-              } transition-transform duration-300 ease-out hover:-translate-y-1 hover:shadow-xl`}>
+              <div className={`border rounded-xl p-6 text-center bg-[var(--card)] border-[var(--border)] transition-transform duration-300 ease-out hover:-translate-y-1 hover:shadow-xl`}>
                 <div className="flex items-center justify-center mb-3">
-                  <Trophy className={`w-8 h-8 ${
-                    theme === 'light' ? 'text-[var(--accent)]' : 'text-green-400'
-                  }`} />
+                  <Trophy className={`w-8 h-8 text-[var(--accent)]`} />
                 </div>
-                <h3 className={`text-sm font-medium mb-1 ${
-                  theme === 'light' ? 'text-[#666666]' : 'text-[var(--muted-foreground)]'
-                }`}>Games Played</h3>
-                <p className={`text-3xl font-bold ${
-                  theme === 'light' ? 'text-[#1A1A1A]' : 'text-[var(--accent-foreground)]'
-                }`}>{uniqueGameReports.length}</p>
+                <h3 className={`text-sm font-medium mb-1 text-[var(--muted-foreground)]`}>Games Played</h3>
+                <p className={`text-3xl font-bold text-[var(--card-foreground)]`}>{uniqueGameReports.length}</p>
               </div>
               
-              <div className={`border rounded-xl p-6 text-center ${
-                theme === 'light' 
-                  ? 'bg-[var(--card)] border-[#E5E7EB]' 
-                  : 'bg-[#0f0f23] border-[#16213e]'
-              }`}>
+              <div className={`border rounded-xl p-6 text-center bg-[var(--card)] border-[var(--border)]`}>
                 <div className="flex items-center justify-center mb-3">
-                  <Target className={`w-8 h-8 ${
-                    theme === 'light' ? 'text-[var(--accent)]' : 'text-purple-400'
-                  }`} />
+                  <Target className={`w-8 h-8 text-[var(--accent)]`} />
                 </div>
-                <h3 className={`text-sm font-medium mb-1 ${
-                  theme === 'light' ? 'text-[#666666]' : 'text-[var(--muted-foreground)]'
-                }`}>Puzzles Solved</h3>
-                <p className={`text-3xl font-bold ${
-                  theme === 'light' ? 'text-[#1A1A1A]' : 'text-[var(--accent-foreground)]'
-                }`}>
+                <h3 className={`text-sm font-medium mb-1 text-[var(--muted-foreground)]`}>Puzzles Solved</h3>
+                <p className={`text-3xl font-bold text-[var(--card-foreground)]`}>
                   {puzzlesSolved}
                   {typeof totalPuzzles === 'number' && totalPuzzles > 0 && (
-                    <span className={`text-lg ${
-                      theme === 'light' ? 'text-[#666666]' : 'text-[var(--muted-foreground)]'
-                    }`}> / {totalPuzzles}</span>
+                    <span className={`text-lg text-[var(--muted-foreground)]`}> / {totalPuzzles}</span>
                   )}
                 </p>
               </div>
               
-              <div className={`border rounded-xl p-6 text-center ${
-                theme === 'light' 
-                  ? 'bg-[var(--card)] border-[#E5E7EB]' 
-                  : 'bg-[#0f0f23] border-[#16213e]'
-              }`}>
+              <div className={`border rounded-xl p-6 text-center bg-[var(--card)] border-[var(--border)]`}>
                 <div className="flex items-center justify-center mb-3">
-                  <Clock className={`w-8 h-8 ${
-                    theme === 'light' ? 'text-[#D97706]' : 'text-blue-400'
-                  }`} />
+                  <Clock className={`w-8 h-8 text-[var(--accent)]`} />
                 </div>
-                <h3 className={`text-sm font-medium mb-1 ${
-                  theme === 'light' ? 'text-[#666666]' : 'text-[var(--muted-foreground)]'
-                }`}>Total Time</h3>
-                <p className={`text-3xl font-bold ${
-                  theme === 'light' ? 'text-[#1A1A1A]' : 'text-[var(--accent-foreground)]'
-                }`}>{formatTime(totalTime)}</p>
+                <h3 className={`text-sm font-medium mb-1 text-[var(--muted-foreground)]`}>Total Time</h3>
+                <p className={`text-3xl font-bold text-[var(--card-foreground)]`}>{formatTime(totalTime)}</p>
               </div>
             </div>
 
             {/* Analytics Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
               {/* Time Spent by Section */}
-              <div className={`border rounded-2xl shadow-2xl p-6 transition-transform duration-300 ease-out hover:-translate-y-1 hover:shadow-2xl ${
-                theme === 'light' 
-                  ? 'bg-[var(--card)] border-[#E5E7EB]' 
-                  : 'bg-[#0f0f23] border-[#16213e]'
-              }`}>
-                <h3 className={`text-xl font-bold mb-4 ${
-                  theme === 'light' ? 'text-[#1A1A1A]' : 'text-[var(--accent-foreground)]'
-                }`}>Time Spent by Section</h3>
+              <div className={`border rounded-2xl shadow-2xl p-6 transition-transform duration-300 ease-out hover:-translate-y-1 hover:shadow-2xl bg-[var(--card)] border-[var(--border)]`}>
+                <h3 className={`text-xl font-bold mb-4 text-[var(--card-foreground)]`}>Time Spent by Section</h3>
                 <div className="w-full h-64">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
@@ -476,14 +418,8 @@ export default function DashboardPage() {
               </div>
 
               {/* Puzzle Distribution */}
-              <div className={`border rounded-2xl shadow-2xl p-6 ${
-                theme === 'light' 
-                  ? 'bg-[var(--card)] border-[#E5E7EB]' 
-                  : 'bg-[#0f0f23] border-[#16213e]'
-              }`}>
-                <h3 className={`text-xl font-bold mb-4 ${
-                  theme === 'light' ? 'text-[#1A1A1A]' : 'text-[var(--accent-foreground)]'
-                }`}>Puzzle Distribution</h3>
+              <div className={`border rounded-2xl shadow-2xl p-6 bg-[var(--card)] border-[var(--border)]`}>
+                <h3 className={`text-xl font-bold mb-4 text-[var(--card-foreground)]`}>Puzzle Distribution</h3>
                 <div className="w-full h-64">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
@@ -508,22 +444,12 @@ export default function DashboardPage() {
             </div>
 
             {/* Game Reports Section */}
-            <div className={`border rounded-2xl shadow-2xl p-6 mb-8 ${
-              theme === 'light' 
-                ? 'bg-[var(--card)] border-[#E5E7EB]' 
-                : 'bg-[#0f0f23] border-[#16213e]'
-            }`}>
+            <div className={`border rounded-2xl shadow-2xl p-6 mb-8 bg-[var(--card)] border-[var(--border)]`}>
               <div className="flex items-center justify-between mb-6">
-                <h3 className={`text-xl font-bold ${
-                  theme === 'light' ? 'text-[#1A1A1A]' : 'text-[var(--accent-foreground)]'
-                }`}>Game Reports</h3>
+                <h3 className={`text-xl font-bold text-[var(--card-foreground)]`}>Game Reports</h3>
                 <Button
                   onClick={() => setShowGameReports(!showGameReports)}
-                  className={`${
-                    theme === 'light' 
-                      ? 'bg-[#D97706] hover:bg-[#B45309] text-[var(--accent-foreground)]' 
-                      : 'bg-[var(--primary)] hover:bg-[var(--primary)] text-[var(--accent-foreground)]'
-                  }`}
+                  className={`bg-[var(--primary)] text-[var(--primary-foreground)] hover:opacity-90`}
                 >
                   {showGameReports ? 'Hide Reports' : 'View Reports'}
                 </Button>
@@ -533,10 +459,8 @@ export default function DashboardPage() {
                 <div className="space-y-4">
                   {uniqueGameReports.length === 0 ? (
                     <div className="text-center py-8">
-                      <Trophy className={`w-16 h-16 mx-auto mb-4 ${
-                        theme === 'light' ? 'text-[var(--muted-foreground)]' : 'text-[var(--muted-foreground)]'
-                      }`} />
-                      <p className={theme === 'light' ? 'text-[#666666]' : 'text-[var(--muted-foreground)]'}>
+                      <Trophy className={`w-16 h-16 mx-auto mb-4 text-[var(--muted-foreground)]`} />
+                      <p className={'text-[var(--muted-foreground)]'}>
                         No games played yet. Start playing to see your progress!
                       </p>
                     </div>
@@ -545,36 +469,24 @@ export default function DashboardPage() {
                       {uniqueGameReports.map((game, idx) => (
                         <div
                           key={game.id}
-                          className={`rounded-xl p-4 border-l-4 cursor-pointer transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-lg ${
-                            theme === 'light'
-                              ? 'bg-[#F9FAFB] border-l-green-500 hover:bg-[#F3F4F6]'
-                              : 'bg-[#16213e] border-l-blue-500 hover:bg-[#1a1a2e]'
-                          }`}
+                          className={`rounded-xl p-4 border-l-4 cursor-pointer transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-lg bg-[var(--card)] border border-[var(--border)]`}
                           onClick={() => setOpenGameReport({ moves: game.game_report.map((m: any) => m.move), id: game.id })}
                         >
                           <div className="flex items-center justify-between mb-2">
-                            <span className={`font-bold ${
-                              theme === 'light' ? 'text-[#D97706]' : 'text-blue-400'
-                            }`}>Match {idx + 1}</span>
-                            <span className={`text-sm ${
-                              theme === 'light' ? 'text-[#666666]' : 'text-[var(--muted-foreground)]'
-                            }`}>{new Date(game.played_at).toLocaleString()}</span>
+                            <span className={`font-bold text-[var(--accent)]`}>Match {idx + 1}</span>
+                            <span className={`text-sm text-[var(--muted-foreground)]`}>{new Date(game.played_at).toLocaleString()}</span>
                           </div>
                           <div className="flex items-center justify-between">
                             <span className={`text-lg font-semibold ${
                               game.result === 'win' 
-                                ? theme === 'light' ? 'text-[var(--accent)]' : 'text-green-400'
-                                : theme === 'light' ? 'text-[var(--destructive)]' : 'text-red-400'
+                                ? 'text-[var(--accent)]'
+                                : 'text-[var(--destructive)]'
                             }`}>
                               Result: {game.result}
                             </span>
                             <Button
                               size="sm"
-                              className={`${
-                                theme === 'light' 
-                                  ? 'bg-[#D97706] hover:bg-[#B45309] text-[var(--accent-foreground)]' 
-                                  : 'bg-[var(--primary)] hover:bg-[var(--primary)] text-[var(--accent-foreground)]'
-                              }`}
+                              className={`bg-[var(--primary)] text-[var(--primary-foreground)] hover:opacity-90`}
                               onClick={e => {
                                 e.stopPropagation();
                                 window.open(`/review?moves=${encodeURIComponent(JSON.stringify(game.game_report.map((m: any) => m.move)))}&existing=true`, '_blank');
@@ -593,27 +505,21 @@ export default function DashboardPage() {
 
             {/* Time Trend */}
             {timeLog.length > 0 && (
-              <div className={`border rounded-2xl shadow-2xl p-6 ${
-                theme === 'light' 
-                  ? 'bg-[var(--card)] border-[#E5E7EB]' 
-                  : 'bg-[#0f0f23] border-[#16213e]'
-              }`}>
-                <h3 className={`text-xl font-bold mb-4 ${
-                  theme === 'light' ? 'text-[#1A1A1A]' : 'text-[var(--accent-foreground)]'
-                }`}>Activity Trend</h3>
+              <div className={`border rounded-2xl shadow-2xl p-6 bg-[var(--card)] border-[var(--border)]`}>
+                <h3 className={`text-xl font-bold mb-4 text-[var(--card-foreground)]`}>Activity Trend</h3>
                 <div className="w-full h-64">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={timeTrendData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke={theme === 'light' ? '#E5E7EB' : '#374151'} />
-                      <XAxis dataKey="day" stroke={theme === 'light' ? '#666666' : '#9ca3af'} />
-                      <YAxis stroke={theme === 'light' ? '#666666' : '#9ca3af'} />
+                      <CartesianGrid strokeDasharray="3 3" stroke={'var(--border)'} />
+                      <XAxis dataKey="day" stroke={'var(--muted-foreground)'} />
+                      <YAxis stroke={'var(--muted-foreground)'} />
                       <Line 
                         type="monotone" 
                         dataKey="time" 
                         name="Time (sec)" 
-                        stroke={theme === 'light' ? '#D97706' : '#3b82f6'} 
+                        stroke={'var(--accent)'} 
                         strokeWidth={3}
-                        dot={{ fill: theme === 'light' ? '#D97706' : '#3b82f6', strokeWidth: 2, r: 4 }}
+                        dot={{ fill: 'var(--accent)', strokeWidth: 2, r: 4 }}
                       />
                     </LineChart>
                   </ResponsiveContainer>
@@ -622,26 +528,16 @@ export default function DashboardPage() {
             )}
 
             {/* Simplo Chat History */}
-            <div className={`border rounded-2xl shadow-2xl p-6 transition-transform duration-300 ease-out hover:-translate-y-1 hover:shadow-2xl ${
-              theme === 'light' 
-                ? 'bg-[var(--card)] border-[#E5E7EB]' 
-                : 'bg-[#0f0f23] border-[#16213e]'
-            }`}>
+            <div className={`border rounded-2xl shadow-2xl p-6 transition-transform duration-300 ease-out hover:-translate-y-1 hover:shadow-2xl bg-[var(--card)] border-[var(--border)]`}>
               <SimploChatHistory />
             </div>
 
             {/* Modal for game report */}
             {openGameReport && (
               <div className="fixed bottom-4 right-4 z-50 w-full max-w-xl">
-                <div className={`border rounded-xl shadow-2xl p-4 relative ${
-                  theme === 'light' 
-                    ? 'bg-[var(--card)] border-[#E5E7EB]' 
-                    : 'bg-[#1a1a2e] border-[#16213e]'
-                }`}>
+                <div className={`border rounded-xl shadow-2xl p-4 relative bg-[var(--card)] border-[var(--border)]`}>
                   <button
-                    className={`absolute top-2 right-2 text-xl ${
-                      theme === 'light' ? 'text-[#666666] hover:text-[#1A1A1A]' : 'text-[var(--muted-foreground)] hover:text-[var(--accent-foreground)]'
-                    }`}
+                    className={`absolute top-2 right-2 text-xl text-[var(--muted-foreground)] hover:text-[var(--card-foreground)]`}
                     onClick={() => setOpenGameReport(null)}
                   >
                     ✕

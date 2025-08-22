@@ -1,59 +1,44 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
-import { useTheme } from "next-themes"
+import { THEMES, type PlanetTheme } from "@/components/ThemeManager"
 
-const themes = [
-  {
-    id: "dark",
-    name: "🌙 Dark Mode",
-    description: "Bioluminescent Abyss - Deep navy with electric cyan accents",
-    colors: {
-      background: "#0A1A2F",
-      accent: "#00F5D4",
-      text: "#D8E6FF"
-    }
-  },
-  {
-    id: "light",
-    name: "☀️ Light Mode", 
-    description: "Warm Cream - Cozy and inviting with soft orange highlights",
-    colors: {
-      background: "#F4D6C6",
-      accent: "#D2693F",
-      text: "#222222"
-    }
-  },
-  {
-    id: "neon",
-    name: "⚡ Neon Gamified",
-    description: "Chaotic gaming experience with multiple neon colors and dynamic effects",
-    colors: {
-      background: "#0a0a0a",
-      accent: "#FFD93D",
-      text: "#F8F8F8"
-    }
-  },
-  {
-    id: "zen",
-    name: "🧘 Zen Minimal",
-    description: "Clean and minimal with soft indigo accents",
-    colors: {
-      background: "#F2F2F2",
-      accent: "#5C6BC0",
-      text: "#1A1A1A"
-    }
-  }
+const THEME_KEY = "endgame-theme"
+
+const themeCards: Array<{
+  id: PlanetTheme
+  name: string
+  description: string
+  icon: string
+}> = [
+  { id: "grid", name: "Grid", description: "Cosmos & galaxy vibes with stars and nebula", icon: "⭐" },
+  { id: "sol", name: "Solve", description: "Sunset horizon with warm gradients", icon: "🌅" },
+  { id: "flux", name: "Flux", description: "Gaming neon cyberpunk with glowing grids", icon: "🎮" },
+  { id: "terra", name: "Terra", description: "Lush forests with earthy greens and browns", icon: "🌲" },
+  { id: "glacis", name: "Glacius", description: "Icy glacier with crystal blue shards", icon: "❄️" },
 ]
 
-export function ThemeShowcase() {
-  const [selectedTheme, setSelectedTheme] = useState("dark")
-  const { setTheme } = useTheme()
+function applyTheme(theme: PlanetTheme) {
+  if (typeof document === "undefined") return
+  document.documentElement.setAttribute("data-theme", theme)
+  try { localStorage.setItem(THEME_KEY, theme) } catch {}
+  try { window.dispatchEvent(new CustomEvent("theme-change", { detail: { theme } })) } catch {}
+}
 
-  const applyTheme = () => {
-    setTheme(selectedTheme)
-  }
+export function ThemeShowcase() {
+  const [selectedTheme, setSelectedTheme] = useState<PlanetTheme>("grid")
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    try {
+      const saved = (localStorage.getItem(THEME_KEY) as PlanetTheme) || "grid"
+      if (THEMES.includes(saved)) setSelectedTheme(saved)
+    } catch {}
+    setMounted(true)
+  }, [])
+
+  const onApply = () => applyTheme(selectedTheme)
 
   return (
     <div className="space-y-8">
@@ -62,72 +47,46 @@ export function ThemeShowcase() {
           Choose Your Theme
         </h2>
         <p className="text-lg text-[var(--secondary-text)] max-w-2xl mx-auto">
-          Select from four unique visual themes to personalize your chess experience
+          Switch between the same themes available in the navbar.
         </p>
       </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {themes.map((theme) => {
-          return (
-            <div 
-              key={theme.id}
-              className={`cursor-pointer transition-all duration-300 hover:scale-105 p-6 rounded-lg border-2 ${
-                selectedTheme === theme.id 
-                  ? 'border-[var(--accent)] bg-[var(--accent)]/10 shadow-lg' 
-                  : 'border-[var(--border)] hover:border-[var(--accent)]/50 hover:bg-[var(--accent)]/5'
-              }`}
-              onClick={() => setSelectedTheme(theme.id)}
-            >
-              <div className="flex items-center justify-between mb-4">
-                <div className="text-2xl">{theme.name.split(' ')[0]}</div>
-                <div className="text-lg font-semibold text-[var(--primary-text)]">
-                  {theme.name}
-                </div>
-              </div>
-              <p className="text-[var(--secondary-text)] text-sm mb-6 leading-relaxed">
-                {theme.description}
-              </p>
-              <div className="space-y-3">
-                <div className="flex items-center space-x-3">
-                  <div 
-                    className="w-5 h-5 rounded-full border-2 border-[var(--border)]"
-                    style={{ backgroundColor: theme.colors.background }}
-                  />
-                  <span className="text-sm text-[var(--secondary-text)]">Background</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <div 
-                    className="w-5 h-5 rounded-full border-2 border-[var(--border)]"
-                    style={{ backgroundColor: theme.colors.accent }}
-                  />
-                  <span className="text-sm text-[var(--secondary-text)]">Accent</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <div 
-                    className="w-5 h-5 rounded-full border-2 border-[var(--border)]"
-                    style={{ backgroundColor: theme.colors.text }}
-                  />
-                  <span className="text-sm text-[var(--secondary-text)]">Text</span>
-                </div>
-              </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+        {themeCards.map((t) => (
+          <div
+            key={t.id}
+            className={`cursor-pointer transition-all duration-300 hover:scale-105 p-6 rounded-lg border-2 ${
+              selectedTheme === t.id
+                ? "border-[var(--accent)] bg-[var(--accent)]/10 shadow-lg"
+                : "border-[var(--border)] hover:border-[var(--accent)]/50 hover:bg-[var(--accent)]/5"
+            }`}
+            onClick={() => setSelectedTheme(t.id)}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="text-2xl" aria-hidden>{t.icon}</div>
+              <div className="text-lg font-semibold text-[var(--primary-text)]">{t.name}</div>
             </div>
-          )
-        })}
+            <p className="text-[var(--secondary-text)] text-sm mb-2 leading-relaxed">{t.description}</p>
+            {selectedTheme === t.id && (
+              <div className="text-xs text-[var(--accent)] font-medium">Active</div>
+            )}
+          </div>
+        ))}
       </div>
-      
+
       <div className="text-center space-y-4">
         <p className="text-base text-[var(--secondary-text)]">
-          Current theme: <span className="font-semibold text-[var(--accent)]">
-            {themes.find(t => t.id === selectedTheme)?.name}
+          Current theme: <span className="font-semibold text-[var(--accent)]" suppressHydrationWarning>
+            {mounted ? themeCards.find((tt) => tt.id === selectedTheme)?.name : "Grid"}
           </span>
         </p>
-        <Button 
+        <Button
           className="bg-[var(--accent)] text-[var(--card-foreground)] hover:bg-[var(--accent)]/90 px-8 py-3 text-lg font-bold"
-          onClick={applyTheme}
+          onClick={onApply}
         >
           Apply Theme
         </Button>
       </div>
     </div>
   )
-} 
+}

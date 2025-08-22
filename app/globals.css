@@ -1603,3 +1603,68 @@ a.active, a:focus, a:hover {
 }
 
 /* ===== END FLOATING BACKGROUND OPTIMIZATIONS ===== */
+
+/* ===== Imported landing utilities (cosmic/glass/particles) ===== */
+@layer components {
+  .cosmic-glow { position: relative; }
+  .cosmic-glow::before {
+    content: "";
+    position: absolute; inset: 0; border-radius: 0.5rem; opacity: 0.5; filter: blur(12px);
+    background: radial-gradient(circle, hsl(var(--primary) / 0.3), transparent 70%);
+    z-index: -1;
+  }
+
+  .glass-card {
+    background: hsl(var(--card) / 0.1);
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
+    border: 1px solid hsl(var(--foreground) / 0.1);
+  }
+
+  .hero-glow {
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.08), hsl(var(--secondary) / 0.08));
+    animation: pulse-glow 4s ease-in-out infinite;
+  }
+
+  .hover-lift { transition: transform 0.3s, box-shadow 0.3s; }
+  .hover-lift:hover { transform: translateY(-6px); box-shadow: 0 25px 50px -12px hsl(var(--primary) / 0.25); }
+
+  .chess-glow { position: relative; overflow: hidden; }
+  .chess-glow::after {
+    content: "";
+    position: absolute; inset: 0; opacity: 0; transition: opacity 0.3s ease;
+    background: radial-gradient(circle, hsl(var(--primary) / 0.25), transparent 70%);
+    z-index: -1;
+  }
+  .chess-glow:hover::after { opacity: 1; }
+}
+
+@layer utilities {
+  .text-cosmic {
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)));
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  }
+}
+
+/* Keyframes and particles */
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  33% { transform: translateY(-10px) rotate(5deg); }
+  66% { transform: translateY(-5px) rotate(-3deg); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { filter: brightness(1) saturate(1); }
+  50% { filter: brightness(1.1) saturate(1.2); }
+}
+
+.chess-piece-float { animation: float 6s ease-in-out infinite; }
+.parallax-bg { transform: translateZ(0); will-change: transform; }
+.particle { width: 4px; height: 4px; border-radius: 9999px; background: hsl(var(--primary) / 0.3); animation: particle-drift 8s linear infinite; }
+@keyframes particle-drift {
+  0% { transform: translateY(0px) translateX(0px) rotate(0deg); }
+  25% { transform: translateY(-20px) translateX(10px) rotate(90deg); }
+  50% { transform: translateY(-10px) translateX(-5px) rotate(180deg); }
+  75% { transform: translateY(-30px) translateX(15px) rotate(270deg); }
+  100% { transform: translateY(0px) translateX(0px) rotate(360deg); }
+}

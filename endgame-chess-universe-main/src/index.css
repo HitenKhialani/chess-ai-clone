@@ -1,0 +1,242 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Endgame Chess Platform Design System - Cosmic & Futuristic Theme */
+
+@layer base {
+  :root {
+    /* Cosmic Base Colors */
+    --background: 222 84% 4%;
+    --background-secondary: 225 71% 7%;
+    --foreground: 210 40% 98%;
+
+    /* Card System */
+    --card: 225 71% 7%;
+    --card-foreground: 210 40% 98%;
+    --card-glass: 225 71% 7% / 0.1;
+
+    /* Interactive Elements */
+    --popover: 225 71% 7%;
+    --popover-foreground: 210 40% 98%;
+
+    /* Brand Colors - Chess Theme */
+    --primary: 200 100% 70%;
+    --primary-foreground: 222 84% 4%;
+    --primary-glow: 200 100% 80%;
+
+    --secondary: 280 100% 70%;
+    --secondary-foreground: 210 40% 98%;
+    --secondary-glow: 280 100% 80%;
+
+    /* Chess Piece Colors */
+    --chess-white: 48 100% 88%;
+    --chess-black: 222 84% 15%;
+    --chess-gold: 45 100% 65%;
+
+    /* Theme Variants */
+    --grid-primary: 200 100% 70%;
+    --solve-primary: 25 100% 65%;
+    --flux-primary: 315 100% 70%;
+    --terra-primary: 120 60% 50%;
+    --glacius-primary: 195 100% 75%;
+
+    /* Accents & States */
+    --muted: 215 32% 17%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 200 100% 70%;
+    --accent-foreground: 222 84% 4%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+
+    /* Borders & Inputs */
+    --border: 215 32% 17%;
+    --input: 215 32% 17%;
+    --ring: 200 100% 70%;
+
+    /* Gradients */
+    --gradient-cosmic: linear-gradient(135deg, hsl(222 84% 4%), hsl(225 71% 7%), hsl(215 32% 17%));
+    --gradient-chess: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)));
+    --gradient-hero: linear-gradient(135deg, hsl(222 84% 4%), hsl(280 100% 10%), hsl(200 100% 10%));
+    --gradient-glow: radial-gradient(circle, hsl(var(--primary-glow) / 0.3), transparent);
+
+    /* Shadows & Effects */
+    --shadow-cosmic: 0 25px 50px -12px hsl(var(--primary) / 0.25);
+    --shadow-glow: 0 0 40px hsl(var(--primary-glow) / 0.6);
+    --shadow-piece: 0 10px 30px -10px hsl(var(--chess-gold) / 0.4);
+
+    /* Animations */
+    --transition-cosmic: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    --radius: 1rem;
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  /* Theme Variants */
+  .theme-grid {
+    --primary: var(--grid-primary);
+    --gradient-hero: linear-gradient(135deg, hsl(222 84% 4%), hsl(200 100% 10%), hsl(280 100% 8%));
+  }
+
+  .theme-solve {
+    --primary: var(--solve-primary);
+    --gradient-hero: linear-gradient(135deg, hsl(25 100% 15%), hsl(25 100% 25%), hsl(45 100% 20%));
+  }
+
+  .theme-flux {
+    --primary: var(--flux-primary);
+    --gradient-hero: linear-gradient(135deg, hsl(315 100% 8%), hsl(315 100% 15%), hsl(280 100% 10%));
+  }
+
+  .theme-terra {
+    --primary: var(--terra-primary);
+    --gradient-hero: linear-gradient(135deg, hsl(120 60% 8%), hsl(120 60% 15%), hsl(90 40% 12%));
+  }
+
+  .theme-glacius {
+    --primary: var(--glacius-primary);
+    --gradient-hero: linear-gradient(135deg, hsl(195 100% 8%), hsl(195 100% 15%), hsl(210 100% 12%));
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground overflow-x-hidden;
+    background: var(--gradient-hero);
+    background-attachment: fixed;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer components {
+  /* Cosmic Animation Effects */
+  .cosmic-glow {
+    @apply relative;
+  }
+
+  .cosmic-glow::before {
+    content: '';
+    @apply absolute inset-0 rounded-lg opacity-50 blur-xl;
+    background: var(--gradient-glow);
+    z-index: -1;
+  }
+
+  .chess-piece-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .parallax-bg {
+    transform: translateZ(0);
+    will-change: transform;
+  }
+
+  .glass-card {
+    background: rgba(225, 71, 7, 0.1);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .hero-glow {
+    background: var(--gradient-hero);
+    animation: pulse-glow 4s ease-in-out infinite;
+  }
+
+  /* Interactive Hover Effects */
+  .hover-lift {
+    @apply transition-all duration-300;
+  }
+
+  .hover-lift:hover {
+    @apply transform -translate-y-2;
+    box-shadow: var(--shadow-cosmic);
+  }
+
+  .chess-glow {
+    @apply relative overflow-hidden;
+  }
+
+  .chess-glow::after {
+    content: '';
+    @apply absolute inset-0 opacity-0 transition-opacity duration-300;
+    background: var(--gradient-glow);
+    z-index: -1;
+  }
+
+  .chess-glow:hover::after {
+    @apply opacity-100;
+  }
+}
+
+@layer utilities {
+  .text-cosmic {
+    background: var(--gradient-chess);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .border-cosmic {
+    border-image: var(--gradient-chess) 1;
+  }
+}
+
+/* Keyframe Animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33% { transform: translateY(-10px) rotate(5deg); }
+  66% { transform: translateY(-5px) rotate(-3deg); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { 
+    filter: brightness(1) saturate(1);
+  }
+  50% { 
+    filter: brightness(1.1) saturate(1.2);
+  }
+}
+
+@keyframes particle-drift {
+  0% { transform: translateY(0px) translateX(0px) rotate(0deg); }
+  25% { transform: translateY(-20px) translateX(10px) rotate(90deg); }
+  50% { transform: translateY(-10px) translateX(-5px) rotate(180deg); }
+  75% { transform: translateY(-30px) translateX(15px) rotate(270deg); }
+  100% { transform: translateY(0px) translateX(0px) rotate(360deg); }
+}
+
+.particle {
+  animation: particle-drift 8s linear infinite;
+}
+
+.particle:nth-child(odd) {
+  animation-delay: -2s;
+}
+
+.particle:nth-child(even) {
+  animation-delay: -4s;
+}

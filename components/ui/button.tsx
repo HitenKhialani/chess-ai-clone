@@ -18,6 +18,12 @@ const buttonVariants = cva(
           "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
         ghost: "text-[var(--accent)]",
         link: "text-primary underline-offset-4 hover:underline",
+        // New variants for landing styles
+        hero: "bg-[var(--accent)] text-[var(--accent-foreground)] shadow hover:bg-[var(--accent)]/90",
+        glass:
+          "bg-white/10 text-foreground border border-white/20 backdrop-blur-md shadow-sm hover:bg-white/15",
+        cosmic:
+          "bg-gradient-to-r from-[hsl(var(--primary))] to-[hsl(var(--secondary))] text-[var(--accent-foreground)] shadow hover:opacity-90",
       },
       size: {
         default: "h-9 px-4 py-2",

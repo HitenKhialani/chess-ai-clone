@@ -32,7 +32,7 @@ export default function RootLayout({
 
             <FloatingBackground />
             <Navbar />
-            <main className="container mx-auto px-4 py-8">
+            <main className="relative z-10 container mx-auto px-4 py-8">
               {children}
             </main>
 

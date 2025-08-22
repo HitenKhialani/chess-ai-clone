@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
     const hasImage = messages.some((msg: any) => msg.image)
     
     // Use vision model if there's an image, otherwise use the regular model
-    const model = hasImage ? "openai/gpt-4o-mini" : "deepseek/deepseek-r1-0528:free"
+    const model = hasImage ? "moonshotai/kimi-vl-a3b-thinking:free" : "openai/gpt-oss-20b:free"
 
     // Process messages to include images in the correct format
     const processedMessages = messages.map((msg: any) => {

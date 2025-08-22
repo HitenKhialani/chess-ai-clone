@@ -27,11 +27,19 @@ function applyTheme(theme: Theme) {
 }
 
 export default function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>(() => {
-    if (typeof window === "undefined") return "grid"
-    const saved = (localStorage.getItem(THEME_KEY) as Theme) || "grid"
-    return THEMES.includes(saved) ? saved : "grid"
-  })
+  // To avoid SSR/CSR text mismatches, start with a stable default ("grid")
+  // and then read localStorage after mount.
+  const [theme, setTheme] = useState<Theme>("grid")
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    // Initialize from localStorage on client only
+    try {
+      const saved = (localStorage.getItem(THEME_KEY) as Theme) || "grid"
+      if (THEMES.includes(saved)) setTheme(saved)
+    } catch {}
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
     applyTheme(theme)
@@ -52,7 +60,10 @@ export default function ThemeToggle() {
       className="rounded-full border border-[var(--border)] text-[var(--primary-text)] hover:bg-[var(--card)]/60"
       title={`Theme: ${theme}`}
     >
-      <span className="text-lg leading-none">{ICONS[theme]}</span>
+      {/* suppressHydrationWarning prevents SSR/CSR emoji mismatch warnings */}
+      <span className="text-lg leading-none" suppressHydrationWarning>
+        {mounted ? ICONS[theme] : ICONS["grid"]}
+      </span>
     </Button>
   )
 }

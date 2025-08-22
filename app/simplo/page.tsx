@@ -283,6 +283,28 @@ export default function SimploPage() {
     }
   }
 
+  // Handle paste from clipboard (support pasting images directly)
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement | HTMLDivElement>) => {
+    const items = e.clipboardData?.items
+    if (!items) return
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i]
+      if (item && item.type && item.type.startsWith('image/')) {
+        const file = item.getAsFile()
+        if (file) {
+          const reader = new FileReader()
+          reader.onload = (ev) => {
+            const result = ev.target?.result as string
+            if (result) setSelectedImage(result)
+          }
+          reader.readAsDataURL(file)
+          e.preventDefault()
+          break
+        }
+      }
+    }
+  }
+
   const downloadChat = () => {
     if (messages.length === 0) return
 
@@ -853,6 +875,7 @@ export default function SimploPage() {
                       value={input}
                       onChange={(e) => setInput(e.target.value)}
                       onKeyPress={handleKeyPress}
+                      onPaste={handlePaste}
                       disabled={isLoading}
                       className={`flex-1 h-10 md:h-12 rounded-xl transition-all duration-200 text-sm md:text-base border border-[hsl(var(--border))] bg-[hsl(var(--card))] focus:ring-2 focus:ring-[hsl(var(--ring))] focus:border-[hsl(var(--ring))] text-[hsl(var(--foreground))] placeholder:text-[hsl(var(--muted-foreground))]`}
                     />

@@ -89,11 +89,13 @@
 
   /* Flux – Cyber Gaming */
   [data-theme="flux"] {
-    /* Futuristic neon vibe using 2–3 neon shades (no rainbow striping) */
+    /* Flowing neon rivers: conic/linear gradients blend instead of dots */
     --background:
-      radial-gradient(90% 90% at 80% 15%, rgba(0,246,255,0.28) 0%, rgba(0,246,255,0) 60%),
-      radial-gradient(80% 80% at 15% 85%, rgba(168,85,247,0.24) 0%, rgba(168,85,247,0) 65%),
-      radial-gradient(70% 70% at 35% 30%, rgba(255,45,149,0.18) 0%, rgba(255,45,149,0) 55%),
+      conic-gradient(from 210deg at 30% 40%, rgba(255,20,147,0.18) 0 20%, rgba(255,20,147,0) 20% 40%),
+      conic-gradient(from 20deg at 70% 60%, rgba(255,221,0,0.18) 0 22%, rgba(255,221,0,0) 22% 44%),
+      conic-gradient(from 120deg at 40% 72%, rgba(0,255,127,0.16) 0 26%, rgba(0,255,127,0) 26% 52%),
+      conic-gradient(from -30deg at 82% 28%, rgba(255,120,0,0.16) 0 24%, rgba(255,120,0,0) 24% 48%),
+      conic-gradient(from 260deg at 50% 50%, rgba(170,0,255,0.15) 0 28%, rgba(170,0,255,0) 28% 56%),
       linear-gradient(135deg, #0a0a10 0%, #111126 60%, #0b0b18 100%);
     --text-primary: #EAEAEA;
     --text-secondary: #39FF14;
@@ -116,33 +118,59 @@
     --board-light: #1A1A1A;
     --board-dark: #0D0D0D;
     --board-highlight: #39FF14;
+
+    /* Per-section neon glows */
+    --glow-play: rgba(255, 20, 147, 0.85);     /* Pink */
+    --glow-learn: rgba(255, 221, 0, 0.9);      /* Yellow */
+    --glow-puzzle: rgba(0, 255, 127, 0.9);     /* Green */
+    --glow-analyze: rgba(255, 120, 0, 0.9);    /* Orange */
+    --glow-other: rgba(170, 0, 255, 0.9);      /* Purple */
   }
 
   /* Terra – Forest Jungle */
   [data-theme="terra"] {
-    /* Earthy forest tone: dark green base + brown highlights */
-    --background: linear-gradient(135deg, #0f2d1a 0%, #14361f 50%, #1b5e20 100%);
-    --text-primary: #E8F5E9;
-    --text-secondary: #C8E6C9;
+    /* Green-primary with distinct brown secondary band */
+    --background:
+      /* Primary sweep: image green #7CC043 flowing diagonally */
+      linear-gradient(140deg,
+        rgba(124,192,67,0.90) 0%,
+        rgba(124,192,67,0.78) 32%,
+        rgba(124,192,67,0.62) 58%,
+        rgba(124,192,67,0.42) 100%),
+      /* Secondary brown band (placeholder brown; will tune to your hex) */
+      linear-gradient(320deg,
+        rgba(43,39,36,0.42) 0%,
+        rgba(43,39,36,0.18) 28%,
+        rgba(43,39,36,0.00) 56%),
+      /* Soft focal lift in the green */
+      radial-gradient(48% 52% at 70% 18%, rgba(124,192,67,0.22) 0%, rgba(124,192,67,0) 65%),
+      /* Deep base to avoid flatness */
+      linear-gradient(180deg, #0f1b10 0%, #0c160d 100%);
+    --text-primary: #EEF4EA; /* slightly lighter for greener base */
+    --text-secondary: #d8ecd0; /* soft greenish secondary */
     --primary-text: var(--text-primary);
     --secondary-text: var(--text-secondary);
     --foreground: var(--text-primary);
-    --card: #10341e;
-    --card-foreground: #E8F5E9;
-    --accent: #8D6E63; /* brown accents */
-    --accent-foreground: #1B5E20;
-    --border: #6D4C41; /* brownish border */
-    --ring: #8D6E63;   /* brown ring */
-    --highlight: #A1887F; /* brown highlight */
-    --muted-foreground: #BBD7C0;
+    --card: #221b15;                /* dark wood card */
+    --card-foreground: #EDEBE6;
+    --accent: #7CC043;              /* PRIMARY = image green */
+    --accent-foreground: #0d1a10;
+    --border: #6EB83A;              /* green border tuned */
+    --ring: #7CC043;                /* ring matches primary */
+    --highlight: #A7DB70;           /* soft highlight near primary */
+    --muted-foreground: #B8CBB9;
     /* Semantic mappings */
     --primary: var(--accent);
     --primary-foreground: var(--accent-foreground);
     --secondary: var(--highlight);
     --secondary-foreground: #1B5E20;
-    --board-light: #2E7D32; /* green light square */
-    --board-dark: #1B5E20;  /* green dark square */
-    --board-highlight: #8D6E63; /* brown highlight on board */
+    --board-light: #B7E07E; /* lightened from primary */
+    --board-dark: #6EB83A;  /* rich green matching border */
+    --board-highlight: #7B5A45; /* wood-brown highlight on board */
+
+    /* Glows: green primary in front, brown soft ambient */
+    --glow-green: rgba(102, 187, 106, 0.55);
+    --glow-brown: rgba(108, 78, 58, 0.5);
   }
 
   /* Glacis – Icy Antarctica */

@@ -179,22 +179,79 @@ export default function ChatBot() {
           })),
         }),
       })
-
-      if (!response.ok) {
-        // Read the JSON error payload from the API route
-        const err = await response.json()
-        throw new Error(typeof err.error === "string" ? err.error : JSON.stringify(err.error, null, 2))
+      if (!response.ok || !response.body) {
+        // Try to get the error payload
+        let err: any
+        try {
+          err = await response.json()
+        } catch {
+          err = await response.text()
+        }
+        throw new Error(typeof err === 'string' ? err : JSON.stringify(err))
       }
 
-      const data = await response.json()
+      // Insert a streaming assistant message
+      const assistantIndex = messages.length + 1 // after pushing userMessage
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: "", timestamp: new Date() },
+      ])
 
-      const assistantMessage: Message = {
-        role: "assistant",
-        content: data.content,
-        timestamp: new Date(),
+      const reader = response.body.getReader()
+      const decoder = new TextDecoder()
+      let buffer = ""
+
+      const flushChunk = (raw: string) => {
+        // SSE frames are separated by double newlines
+        const events = raw.split(/\n\n/)
+        for (const evt of events) {
+          const line = evt.trim()
+          if (!line) continue
+          // Expect lines like: data: {json}
+          const match = line.match(/^data:\s*(.*)$/)
+          if (!match) continue
+          const payload = match[1]
+          if (payload === "[DONE]") {
+            return "done"
+          }
+          try {
+            const json = JSON.parse(payload)
+            const token =
+              json.choices?.[0]?.delta?.content ??
+              json.choices?.[0]?.message?.content ??
+              json.content ??
+              ""
+            if (token) {
+              setMessages((prev) => {
+                const next = [...prev]
+                const idx = assistantIndex
+                if (next[idx] && next[idx].role === "assistant") {
+                  next[idx] = {
+                    ...next[idx],
+                    content: (next[idx].content || "") + token,
+                  }
+                }
+                return next
+              })
+            }
+          } catch (_) {
+            // Ignore malformed frames
+          }
+        }
+        return "more"
       }
 
-      setMessages((prev) => [...prev, assistantMessage])
+      // Read the stream
+      while (true) {
+        const { value, done } = await reader.read()
+        if (done) break
+        buffer += decoder.decode(value, { stream: true })
+        const status = flushChunk(buffer)
+        if (status === "done") break
+        // Keep last partial frame in buffer
+        const lastSep = buffer.lastIndexOf("\n\n")
+        if (lastSep !== -1) buffer = buffer.slice(lastSep + 2)
+      }
     } catch (error) {
       console.error("Error:", error)
       const errorMessage: Message = {
@@ -321,14 +378,9 @@ export default function ChatBot() {
                           )}
                           {message.role === "assistant" ? (
                             <div className="space-y-3">
-                              {cleanMarkdown(message.content).split('\n\n').map((paragraph, idx) => {
-                                if (!paragraph.trim()) return null;
-                                return (
-                                  <p key={idx} className="leading-relaxed text-sm" style={{ color: 'var(--primary-text)' }}>
-                                    {paragraph}
-                                  </p>
-                                );
-                              })}
+                              <p className="whitespace-pre-wrap leading-relaxed text-sm" style={{ color: 'var(--primary-text)' }}>
+                                {cleanMarkdown(message.content)}
+                              </p>
                             </div>
                           ) : (
                             <p className="whitespace-pre-wrap leading-relaxed" style={{ color: 'var(--primary-text)' }}>{message.content}</p>

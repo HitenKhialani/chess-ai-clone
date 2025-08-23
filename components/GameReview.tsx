@@ -771,7 +771,7 @@ const GameReview: React.FC<GameReviewProps> = ({
             <TabsTrigger value="analytical-view" className="text-sm md:text-base font-semibold py-3 flex items-center gap-2 hover:bg-accent/10 focus-visible:outline-none focus-visible:ring-0 data-[state=active]:bg-accent/15 data-[state=active]:text-foreground text-muted-foreground rounded-none">📊 Analytical View</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="game-view" className="space-y-6">
+          <TabsContent value="game-view" className="space-y-6" forceMount>
             {/* Game View Tab - Chessboard and Move History */}
             <div className="flex flex-col md:flex-row justify-center items-start w-full max-w-4xl mx-auto gap-8" style={{ minHeight: 320 }}>
               {/* Final Board Section */}
@@ -819,7 +819,7 @@ const GameReview: React.FC<GameReviewProps> = ({
             </div>
           </TabsContent>
 
-          <TabsContent value="analytical-view" className="space-y-6">
+          <TabsContent value="analytical-view" className="space-y-6" forceMount>
             {/* Overview Section */}
             <div ref={overviewSectionRef} data-pdf-section="overview">
               <EnhancedGameSummaryCard

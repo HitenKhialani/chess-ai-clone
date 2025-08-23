@@ -1,5 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server"
 
+// Ensure Node.js runtime and dynamic streaming (avoid caching/buffering)
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+
 // Get API key from environment variable
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY
 
@@ -93,8 +97,10 @@ export async function POST(req: NextRequest) {
       headers: {
         "Content-Type": "text/event-stream; charset=utf-8",
         "Cache-Control": "no-cache, no-transform",
-        Connection: "keep-alive",
+        "Connection": "keep-alive",
         "Transfer-Encoding": "chunked",
+        "X-Accel-Buffering": "no",
+        "Vary": "Accept",
       },
     })
   } catch (error) {

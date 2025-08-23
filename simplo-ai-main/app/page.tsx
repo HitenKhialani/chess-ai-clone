@@ -47,6 +47,8 @@ export default function ChatBot() {
   const [showPasteHint, setShowPasteHint] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const streamingAssistantIndexRef = useRef<number | null>(null)
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -147,6 +149,11 @@ export default function ChatBot() {
     }
   }, [])
 
+  // Auto-scroll to bottom when messages update
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages, isLoading])
+
   const handleSendMessage = async () => {
     if (!input.trim() && !selectedImage) return
 
@@ -171,6 +178,7 @@ export default function ChatBot() {
         headers: {
           "Content-Type": "application/json",
         },
+        cache: 'no-store',
         body: JSON.stringify({
           messages: [...messages, userMessage].map((msg) => ({
             role: msg.role,
@@ -190,12 +198,12 @@ export default function ChatBot() {
         throw new Error(typeof err === 'string' ? err : JSON.stringify(err))
       }
 
-      // Insert a streaming assistant message
-      const assistantIndex = messages.length + 1 // after pushing userMessage
-      setMessages((prev) => [
-        ...prev,
-        { role: "assistant", content: "", timestamp: new Date() },
-      ])
+      // Insert a streaming assistant message and capture its index
+      setMessages((prev) => {
+        const idx = prev.length
+        streamingAssistantIndexRef.current = idx
+        return [...prev, { role: "assistant", content: "", timestamp: new Date() }]
+      })
 
       const reader = response.body.getReader()
       const decoder = new TextDecoder()
@@ -224,7 +232,7 @@ export default function ChatBot() {
             if (token) {
               setMessages((prev) => {
                 const next = [...prev]
-                const idx = assistantIndex
+                const idx = streamingAssistantIndexRef.current ?? (next.length - 1)
                 if (next[idx] && next[idx].role === "assistant") {
                   next[idx] = {
                     ...next[idx],
@@ -252,6 +260,8 @@ export default function ChatBot() {
         const lastSep = buffer.lastIndexOf("\n\n")
         if (lastSep !== -1) buffer = buffer.slice(lastSep + 2)
       }
+      // Clear streaming index when finished
+      streamingAssistantIndexRef.current = null
     } catch (error) {
       console.error("Error:", error)
       const errorMessage: Message = {

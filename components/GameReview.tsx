@@ -411,10 +411,16 @@ const ComprehensivePDFExportButton = ({
   moveHistory,
   elo,
   totalTime,
-  moveTypesChartElement,
-  accuracyByPhaseChartElement,
-  positionEvaluationChartElement,
-  moveRiskProfileChartElement
+  moveTypesChartRef,
+  accuracyByPhaseChartRef,
+  positionEvaluationChartRef,
+  moveRiskProfileChartRef,
+  overviewSectionRef,
+  finalBoardSectionRef,
+  moveHistorySectionRef,
+  chartsSectionRef,
+  learningSectionRef,
+  prepareFinalBoardCapture
 }: {
   analysis: any[],
   playerColor: string,
@@ -425,16 +431,31 @@ const ComprehensivePDFExportButton = ({
   moveHistory: string[],
   elo: number,
   totalTime: number,
-  moveTypesChartElement?: HTMLElement,
-  accuracyByPhaseChartElement?: HTMLElement,
-  positionEvaluationChartElement?: HTMLElement,
-  moveRiskProfileChartElement?: HTMLElement
+  moveTypesChartRef?: React.RefObject<HTMLElement>,
+  accuracyByPhaseChartRef?: React.RefObject<HTMLElement>,
+  positionEvaluationChartRef?: React.RefObject<HTMLElement>,
+  moveRiskProfileChartRef?: React.RefObject<HTMLElement>,
+  overviewSectionRef?: React.RefObject<HTMLElement>,
+  finalBoardSectionRef?: React.RefObject<HTMLElement>,
+  moveHistorySectionRef?: React.RefObject<HTMLElement>,
+  chartsSectionRef?: React.RefObject<HTMLElement>,
+  learningSectionRef?: React.RefObject<HTMLElement>,
+  prepareFinalBoardCapture?: () => Promise<() => void> | (() => void)
 }) => {
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
   const handleExportPDF = async () => {
     setIsGeneratingPDF(true);
+    // Ensure the chessboard reflects the FINAL position during capture
+    let restore: (() => void) | void | null = null;
     try {
+      if (prepareFinalBoardCapture) {
+        const cleanupOrPromise = prepareFinalBoardCapture();
+        restore = cleanupOrPromise instanceof Promise ? await cleanupOrPromise : cleanupOrPromise;
+        // allow layout to settle
+        await new Promise(r => requestAnimationFrame(() => setTimeout(r, 120)));
+      }
+
       console.log('Starting PDF generation with data:', {
         analysisLength: analysis?.length,
         moveHistoryLength: moveHistory?.length,
@@ -455,10 +476,16 @@ const ComprehensivePDFExportButton = ({
         moveHistory,
         playerElo: elo,
         totalGameTime: totalTime,
-        moveTypesChartElement,
-        accuracyByPhaseChartElement,
-        positionEvaluationChartElement,
-        moveRiskProfileChartElement
+        moveTypesChartElement: moveTypesChartRef?.current || undefined,
+        accuracyByPhaseChartElement: accuracyByPhaseChartRef?.current || undefined,
+        positionEvaluationChartElement: positionEvaluationChartRef?.current || undefined,
+        moveRiskProfileChartElement: moveRiskProfileChartRef?.current || undefined,
+        // Pixel-perfect section elements (dereferenced at click time)
+        overviewElement: overviewSectionRef?.current || undefined,
+        finalBoardElement: finalBoardSectionRef?.current || undefined,
+        moveHistoryElement: moveHistorySectionRef?.current || undefined,
+        chartsElement: chartsSectionRef?.current || undefined,
+        learningElement: learningSectionRef?.current || undefined
       });
       
       console.log('PDF generation completed successfully');
@@ -467,6 +494,8 @@ const ComprehensivePDFExportButton = ({
       console.error('Error stack:', error.stack);
       alert(`PDF generation failed: ${error.message || 'Unknown error'}. Please try again.`);
     } finally {
+      // restore user position if we changed it for capture
+      try { if (restore) restore(); } catch {}
       setIsGeneratingPDF(false);
     }
   };
@@ -495,7 +524,6 @@ const ComprehensivePDFExportButton = ({
   );
 };
 
-
 const GameReview: React.FC<GameReviewProps> = ({
   moveHistory,
   analysis: analysisProp,
@@ -503,8 +531,6 @@ const GameReview: React.FC<GameReviewProps> = ({
   result: resultProp,
   opening: openingProp,
   playerColor: playerColorProp,
-  totalTime: totalTimeProp,
-  elo: eloProp,
   lessons: lessonsProp,
   keyMistakes: keyMistakesProp,
   magnusSuggestion: magnusSuggestionProp,
@@ -516,6 +542,13 @@ const GameReview: React.FC<GameReviewProps> = ({
   const accuracyByPhaseChartRef = useRef<HTMLDivElement>(null);
   const positionEvaluationChartRef = useRef<HTMLDivElement>(null);
   const moveRiskProfileChartRef = useRef<HTMLDivElement>(null);
+  // Refs for pixel-perfect PDF capture sections
+  const overviewSectionRef = useRef<HTMLDivElement>(null);
+  const finalBoardSectionRef = useRef<HTMLDivElement>(null);
+  const moveHistorySectionRef = useRef<HTMLDivElement>(null);
+  const chartsSectionRef = useRef<HTMLDivElement>(null);
+  const learningSectionRef = useRef<HTMLDivElement>(null);
+
   // All hooks must be called at the top level, before any conditional returns
   const [analysis, setAnalysis] = useState<ReviewMove[]>(analysisProp || []);
   const [accuracy, setAccuracy] = useState<number>(accuracyProp || 0);
@@ -530,8 +563,8 @@ const GameReview: React.FC<GameReviewProps> = ({
   const [showAllMistakes, setShowAllMistakes] = useState(false);
   const [selectedMoveForExplanation, setSelectedMoveForExplanation] = useState<ReviewMove | null>(null);
   const [isLoadingExplanation, setIsLoadingExplanation] = useState(false);
-  
-  // Guard: If moveHistory is empty or not an array, show a message and do not render the review
+
+  // Guard
   if (!Array.isArray(moveHistory) || moveHistory.length === 0) {
     return (
       <div className="w-full min-h-screen flex items-center justify-center text-xl text-muted-foreground">
@@ -539,7 +572,7 @@ const GameReview: React.FC<GameReviewProps> = ({
       </div>
     );
   }
-  
+
   // Helper function for player titles
   const getRandomPlayerTitle = (accuracy: number): string => {
     if (accuracy >= 90) return "Grandmaster Candidate";
@@ -560,7 +593,6 @@ const GameReview: React.FC<GameReviewProps> = ({
   useEffect(() => {
     if (!analysisProp && moveHistory.length > 0) {
       setLoading(true);
-      // Use client-side analysis instead of API call
       analyzeMovesLocally(moveHistory, Chess, 15)
         .then((data) => {
           setAnalysis(data.analysis);
@@ -569,39 +601,20 @@ const GameReview: React.FC<GameReviewProps> = ({
         })
         .catch((error) => {
           console.error('❌ Stockfish analysis failed:', error);
-          console.log('🔄 Falling back to mock analysis');
-          // Fallback to mock data if analysis fails
           const mockAnalysis = moveHistory.map((move: string, idx: number) => {
-            // Check if this is a checkmate move
             const isCheckmate = move.includes('#');
-            
             if (isCheckmate) {
-              return {
-                move,
-                type: 'Brilliant',
-                explanation: 'Checkmate! The ultimate winning move.',
-                evaluation: '30.00',
-                bestMove: move
-              };
+              return { move, type: 'Brilliant', explanation: 'Checkmate! The ultimate winning move.', evaluation: '30.00', bestMove: move };
             }
-            
-            return {
-              move,
-              type: idx % 10 === 7 ? 'Blunder' : idx % 7 === 4 ? 'Mistake' : idx % 3 === 1 ? 'Correct' : 'Brilliant',
-              explanation: `Move ${idx + 1}`,
-              evaluation: (Math.random() * 2 - 1).toFixed(2),
-              bestMove: 'e4'
-            };
+            return { move, type: idx % 10 === 7 ? 'Blunder' : idx % 7 === 4 ? 'Mistake' : idx % 3 === 1 ? 'Correct' : 'Brilliant', explanation: `Move ${idx + 1}` as string, evaluation: (Math.random() * 2 - 1).toFixed(2), bestMove: 'e4' };
           });
           setAnalysis(mockAnalysis);
-          console.log('📋 Mock analysis completed:', mockAnalysis);
         })
         .finally(() => setLoading(false));
     }
   }, [analysisProp, moveHistory]);
 
-
-  // Listen for AI analysis update event from RefactoredMoveHistoryPanel
+  // Listen for AI analysis update event
   useEffect(() => {
     const handler = (event: any) => {
       if (event.detail && event.detail.analysis) {
@@ -613,10 +626,7 @@ const GameReview: React.FC<GameReviewProps> = ({
   }, []);
 
   // FENs for board navigation
-  const fens = useMemo(() =>
-    analysis.length > 0 ? getFensFromMoves(analysis) : [new Chess().fen()],
-    [analysis]
-  );
+  const fens = useMemo(() => analysis.length > 0 ? getFensFromMoves(analysis) : [new Chess().fen()], [analysis]);
 
   useEffect(() => {
     if (!tryMoveMode && fens.length > 0 && currentMoveIdx < fens.length) {
@@ -625,18 +635,42 @@ const GameReview: React.FC<GameReviewProps> = ({
     }
   }, [currentMoveIdx, tryMoveMode, fens]);
 
-  // Listen for move clicks to trigger AI explanation
-  const { getExplanation } = useMoveExplanation();
+  // Ensure FINAL board position for PDF capture, then restore prior state
+  const prepareFinalBoardCapture = () => {
+    try {
+      const prevIdx = currentMoveIdx;
+      const prevFen = userFen;
+      const prevTry = tryMoveMode;
+      const finalIdx = Math.max(0, fens.length - 1);
+      const finalFen = fens[finalIdx];
 
+      // Force board to final state
+      setTryMoveMode(false);
+      setCurrentMoveIdx(finalIdx);
+      setUserChess(new Chess(finalFen));
+      setUserFen(finalFen);
+
+      // Return cleanup to restore previous state
+      return () => {
+        setTryMoveMode(prevTry);
+        setCurrentMoveIdx(prevIdx);
+        setUserChess(new Chess(prevFen));
+        setUserFen(prevFen);
+      };
+    } catch (e) {
+      console.warn('prepareFinalBoardCapture failed, proceeding without adjustment', e);
+      return () => {};
+    }
+  };
+
+  // AI explanation
+  const { getExplanation } = useMoveExplanation();
   useEffect(() => {
     const handleMoveClick = async (event: CustomEvent) => {
-      console.log('GameReview received move-clicked event:', event.detail);
       const { move } = event.detail;
-      
-      // Always fetch detailed AI explanation from API
       setIsLoadingExplanation(true);
       try {
-        const explanationData = {
+        const explanation = await getExplanation({
           move: move.move,
           position: `After move ${move.moveNumber || 1}`,
           moveType: move.type,
@@ -644,57 +678,29 @@ const GameReview: React.FC<GameReviewProps> = ({
           moveNumber: move.moveNumber || 1,
           playerColor: move.playerColor || 'white',
           fenBefore: move.fenBefore,
-          fenAfter: move.fenAfter
-        };
-        
-        const explanation = await getExplanation(explanationData);
-        
-        // Update the move with the detailed explanation
-        const updatedMove = {
-          ...move,
-          explanation: explanation
-        };
-        
-        console.log('Setting detailed explanation:', updatedMove);
-        setSelectedMoveForExplanation(updatedMove);
+          fenAfter: move.fenAfter,
+        });
+        setSelectedMoveForExplanation({ ...move, explanation });
       } catch (error) {
-        console.error('Failed to fetch explanation:', error);
-        // Set a fallback explanation instead of the original move
-        const fallbackMove = {
-          ...move,
-          explanation: `This ${move.type.toLowerCase()} move (${move.evaluation} eval) ${move.type === 'Correct' || move.type === 'Brilliant' ? 'improves the position' : 'could be improved'}.`
-        };
+        const fallbackMove = { ...move, explanation: `This ${move.type.toLowerCase()} move (${move.evaluation} eval) ${move.type === 'Correct' || move.type === 'Brilliant' ? 'improves the position' : 'could be improved'}.` };
         setSelectedMoveForExplanation(fallbackMove);
       } finally {
         setIsLoadingExplanation(false);
       }
     };
-
     window.addEventListener('move-clicked', handleMoveClick as EventListener);
-    return () => {
-      window.removeEventListener('move-clicked', handleMoveClick as EventListener);
-    };
+    return () => window.removeEventListener('move-clicked', handleMoveClick as EventListener);
   }, [getExplanation]);
 
   const handleBoardDrop = (source: string, target: string): boolean => {
     if (!tryMoveMode) return false;
     const chess = new Chess(userFen);
     const moveObj: any = { from: source, to: target };
-    // Check if this is a pawn promotion move
     const piece = chess.get(source as any);
-    const isPromotion = piece && 
-                       piece.type === 'p' && 
-                       ((piece.color === 'w' && target[1] === '8') || 
-                        (piece.color === 'b' && target[1] === '1'));
-    if (isPromotion) {
-      moveObj.promotion = 'q'; // Default to queen for review
-    }
+    const isPromotion = piece && piece.type === 'p' && ((piece.color === 'w' && target[1] === '8') || (piece.color === 'b' && target[1] === '1'));
+    if (isPromotion) moveObj.promotion = 'q';
     const move = chess.move(moveObj);
-    if (move) {
-      setUserChess(chess);
-      setUserFen(chess.fen());
-      return true;
-    }
+    if (move) { setUserChess(chess); setUserFen(chess.fen()); return true; }
     return false;
   };
 
@@ -706,19 +712,8 @@ const GameReview: React.FC<GameReviewProps> = ({
     if (type === 'last') setCurrentMoveIdx(fens.length - 1);
   };
 
-  // Move list click handler for Mistake Replay
-  const handleMistakeClick = (idx: number) => {
-    const fen = fens[idx];
-    const engineMove = analysis[idx]?.bestMove || "";
-    setMistakeReplayData({ fen, engineMove });
-    setShowMistakeReplay(true);
-  };
-
-  // Move counts for summary - Only include user's moves (White moves at even indices: 0, 2, 4, 6, etc.)
   const allAnalysis = Array.isArray(analysis) ? analysis : [];
-  const safeAnalysis = allAnalysis.filter((_, index) => index % 2 === 0); // Only White moves (user moves)
-  
-  // Safety check: ensure analysis is loaded
+  const safeAnalysis = allAnalysis.filter((_, index) => index % 2 === 0);
   if (loading || allAnalysis.length === 0) {
     return (
       <div className="w-full min-h-screen flex items-center justify-center">
@@ -729,158 +724,58 @@ const GameReview: React.FC<GameReviewProps> = ({
       </div>
     );
   }
-  const moveCounts: { Brilliant: number; Correct: number; Mistake: number; Blunder: number } = safeAnalysis.reduce(
-    (acc, move) => {
-      if (acc.hasOwnProperty(move.type)) {
-        acc[move.type as keyof typeof acc] += 1;
-      }
+
+  const moveCounts = safeAnalysis.reduce(
+    (acc: { Brilliant: number; Correct: number; Mistake: number; Blunder: number }, move) => {
+      if (acc.hasOwnProperty(move.type)) acc[move.type as keyof typeof acc] += 1;
       return acc;
     },
     { Brilliant: 0, Correct: 0, Mistake: 0, Blunder: 0 }
   );
 
-  // Eval data for graph
-  const evalData = safeAnalysis.map((m, i) => ({ move: i + 1, evaluation: parseFloat(m.evaluation) }));
-
-  // Side-by-side comparison data
-  const sideBySide = safeAnalysis.map((m, i) => ({
-    moveNumber: i + 1,
-    playerMove: m.move,
-    engineMove: m.bestMove || "-",
-    evalDiff: m.bestMove && m.evaluation ? parseFloat(m.evaluation) : 0,
-    isCritical: m.type === "Blunder" || m.type === "Mistake",
-  }));
-
-  // Key mistakes - Use original move numbers (White moves are at positions 1, 3, 5, 7, etc. in the game)
-  const keyMistakes = keyMistakesProp || safeAnalysis.filter(m => m.type === "Mistake" || m.type === "Blunder").map((m, i) => `Move ${(i * 2) + 1}: ${m.move} (${m.type})`);
-
-  // Use the calculated accuracy from the analysis (which uses the correct formula)
-  const calculatedAccuracy = accuracy || accuracyProp || 0;
-
-  // Opening
   const opening = openingProp || "Unknown Opening";
-
-  // Lessons
   const lessons = lessonsProp || [];
-
-  // Magnus suggestion
   const magnusSuggestion = magnusSuggestionProp || { move: "-", reasoning: "No suggestion available." };
-
-  // Determine game result from move history
-  const determineGameResult = (): string => {
-    if (resultProp) return resultProp; // Use provided result if available
-    
+  const result = (() => {
+    if (resultProp) return resultProp;
     if (moveHistory.length === 0) return "-";
-    
     const lastMove = moveHistory[moveHistory.length - 1];
-    
-    // Check for checkmate
-    if (lastMove.includes('#')) {
-      // If last move is checkmate, determine who won
-      // Since user is White, if the last move is checkmate, we need to determine who delivered it
-      // If moveHistory.length is odd, White just moved, so Black delivered checkmate (White lost)
-      // If moveHistory.length is even, Black just moved, so Black delivered checkmate (White lost)
-      // Wait, let me think about this differently...
-      // If the last move contains '#', it means the player who just moved delivered checkmate
-      // So if it's an odd number of moves, White just moved and delivered checkmate (White won)
-      // If it's an even number of moves, Black just moved and delivered checkmate (Black won, White lost)
-      if (moveHistory.length % 2 === 0) {
-        // Even number of moves means Black just moved and delivered checkmate
-        return "Loss"; // User (White) lost
-      } else {
-        // Odd number of moves means White just moved and delivered checkmate
-        return "Win"; // User (White) won
-      }
-    }
-    
-    // Check for stalemate
-    if (lastMove.includes('=') && lastMove.includes('1/2-1/2')) {
-      return "Draw";
-    }
-    
-    // Check for draw by repetition or insufficient material
-    if (lastMove.includes('1/2-1/2')) {
-      return "Draw";
-    }
-    
-    // Check for resignation
-    if (lastMove.includes('1-0')) {
-      return moveHistory.length % 2 === 1 ? "Win" : "Loss";
-    }
-    if (lastMove.includes('0-1')) {
-      return moveHistory.length % 2 === 1 ? "Loss" : "Win";
-    }
-    
-    // Default to draw if no clear result
-    return "Draw";
-  };
+    if (lastMove.includes('#')) return moveHistory.length % 2 === 0 ? 'Loss' : 'Win';
+    if (lastMove.includes('=') && lastMove.includes('1/2-1/2')) return 'Draw';
+    if (lastMove.includes('1/2-1/2')) return 'Draw';
+    if (lastMove.includes('1-0')) return moveHistory.length % 2 === 1 ? 'Win' : 'Loss';
+    if (lastMove.includes('0-1')) return moveHistory.length % 2 === 1 ? 'Loss' : 'Win';
+    return 'Draw';
+  })();
 
-  const result = determineGameResult();
-  
-  // Additional state for enhanced features
-  const totalTime = 1200; // Mock total time in seconds - would come from props
-  const enhancedGameResult = result?.toLowerCase().includes("win") ? "win" : 
-                            result?.toLowerCase().includes("loss") ? "loss" : "draw";
-  const playerColor = "white"; // Would come from props
-
-  // Pie chart data for move types
-  const pieData = [
-    { name: 'Brilliant', value: moveCounts.Brilliant, color: '#06b6d4' },
-    { name: 'Correct', value: moveCounts.Correct, color: '#22c55e' },
-    { name: 'Mistake', value: moveCounts.Mistake, color: '#eab308' },
-    { name: 'Blunder', value: moveCounts.Blunder, color: '#ef4444' },
-  ];
-
-  // Find the biggest blunder severity
-  const blunderSeverities = safeAnalysis.filter(m => m.type === 'Blunder' || m.type === 'Mistake').map(m => Math.abs(parseFloat(m.evaluation)));
-  const maxBlunder = blunderSeverities.length > 0 ? Math.max(...blunderSeverities) : 0;
-  const blunderPercent = Math.min((maxBlunder / 10) * 100, 100); // scale 0-10 to 0-100%
-
-  // Key turning points: all blunders, mistakes, and brilliant moves
-  const keyTurningPoints = safeAnalysis
-    .map((m, i) => ({ ...m, idx: i }))
-    .filter(m => m.type === 'Blunder' || m.type === 'Mistake' || m.type === 'Brilliant');
-
-  // Mistake replay data
-  const mistakes = safeAnalysis
-    .map((m, i) => ({ ...m, idx: i }))
-    .filter(m => m.type === 'Blunder' || m.type === 'Mistake');
-
-  // Calculate brilliant/correct move streak
-  let bestStreak = 0, currentStreak = 0;
-  safeAnalysis.forEach(m => {
-    if (m.type === 'Brilliant' || m.type === 'Correct') {
-      currentStreak++;
-      if (currentStreak > bestStreak) bestStreak = currentStreak;
-    } else {
-      currentStreak = 0;
-    }
-  });
-
-  // What You Missed insights - Use original move numbers (White moves are at positions 1, 3, 5, 7, etc. in the game)
-  const missedInsights = mistakes.map(m => `Move ${(m.idx * 2) + 1}: ${m.explanation || 'Missed a tactical opportunity.'}`);
-
-  // Mistake Replay show more toggle
-  const visibleMistakes = showAllMistakes ? mistakes : mistakes.slice(0, 3);
+  const calculatedAccuracy = accuracy || accuracyProp || 0;
+  const totalTime = 1200;
+  const enhancedGameResult = result?.toLowerCase().includes('win') ? 'win' : result?.toLowerCase().includes('loss') ? 'loss' : 'draw';
+  const playerColor = 'white';
 
   return (
     <div className="w-full min-h-screen bg-background text-foreground font-sans">
       <div className="max-w-6xl mx-auto px-4 py-8">
+        {/* Section Heading */}
+        <div className="flex flex-col items-center mb-6">
+          <div className="h-12 w-12 rounded-full bg-accent/20 border border-accent/50 flex items-center justify-center shadow-md">
+            <FileText className="h-6 w-6 text-accent" />
+          </div>
+          <h1 className="mt-3 text-3xl font-extrabold text-foreground tracking-tight">Game Review</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Analyze your game with Stockfish and AI insights</p>
+        </div>
+
         <Tabs defaultValue="game-view" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-8">
-            <TabsTrigger value="game-view" className="text-lg font-semibold py-3 flex items-center gap-2 hover:scale-105 transition-transform">
-              📋 Game View
-            </TabsTrigger>
-            <TabsTrigger value="analytical-view" className="text-lg font-semibold py-3 flex items-center gap-2 hover:scale-105 transition-transform">
-              📊 Analytical View
-            </TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 mb-8 rounded-lg border border-accent/30 bg-card/60 backdrop-blur supports-[backdrop-filter]:bg-card/50 overflow-hidden divide-x divide-accent/20">
+            <TabsTrigger value="game-view" className="text-sm md:text-base font-semibold py-3 flex items-center gap-2 hover:bg-accent/10 focus-visible:outline-none focus-visible:ring-0 data-[state=active]:bg-accent/15 data-[state=active]:text-foreground text-muted-foreground rounded-none">📋 Game View</TabsTrigger>
+            <TabsTrigger value="analytical-view" className="text-sm md:text-base font-semibold py-3 flex items-center gap-2 hover:bg-accent/10 focus-visible:outline-none focus-visible:ring-0 data-[state=active]:bg-accent/15 data-[state=active]:text-foreground text-muted-foreground rounded-none">📊 Analytical View</TabsTrigger>
           </TabsList>
 
           <TabsContent value="game-view" className="space-y-6">
             {/* Game View Tab - Chessboard and Move History */}
             <div className="flex flex-col md:flex-row justify-center items-start w-full max-w-4xl mx-auto gap-8" style={{ minHeight: 320 }}>
-              {/* Chessboard (left) */}
-              <div className="flex-1 flex items-center justify-center p-2 w-full md:w-1/2">
+              {/* Final Board Section */}
+              <div ref={finalBoardSectionRef} data-pdf-section="final-board" className="flex-1 flex items-center justify-center p-2 w-full md:w-1/2">
                 <ChessboardPanel
                   userFen={userFen}
                   tryMoveMode={tryMoveMode}
@@ -897,36 +792,39 @@ const GameReview: React.FC<GameReviewProps> = ({
                   totalMoves={moveHistory.length}
                 />
               </div>
-              {/* Move History Panel (right) */}
-              <div className="flex-1 flex flex-col p-2 w-full md:w-1/2">
+              {/* Move History Section */}
+              <div ref={moveHistorySectionRef} data-pdf-section="move-history" className="flex-1 flex flex-col p-2 w-full md:w-1/2">
                 <MoveHistoryPanel
                   analysis={allAnalysis}
                   currentMoveIdx={currentMoveIdx}
-                  onMistakeClick={handleMistakeClick}
+                  onMistakeClick={(idx) => {
+                    const fen = fens[idx];
+                    const engineMove = analysis[idx]?.bestMove || "";
+                    setMistakeReplayData({ fen, engineMove });
+                    setShowMistakeReplay(true);
+                  }}
                   setCurrentMoveIdx={setCurrentMoveIdx}
                   moveHistory={moveHistory}
                   onAnalysisUpdate={setAnalysis}
                 />
+                {/* AI Explanation below Move History */}
+                <div className="mt-4">
+                  <AIExplanationPanel
+                    selectedMove={selectedMoveForExplanation}
+                    onClose={() => setSelectedMoveForExplanation(null)}
+                    isLoading={isLoadingExplanation}
+                  />
+                </div>
               </div>
-            </div>
-            
-            {/* AI Explanation Panel - Full width below chessboard and move history */}
-            <div className="w-full max-w-4xl mx-auto">
-              <AIExplanationPanel
-                selectedMove={selectedMoveForExplanation}
-                onClose={() => setSelectedMoveForExplanation(null)}
-                isLoading={isLoadingExplanation}
-              />
             </div>
           </TabsContent>
 
           <TabsContent value="analytical-view" className="space-y-6">
-            {/* Analytical View Tab - Report-like Display */}
-            <div className="space-y-6">
-              {/* Overview Section */}
+            {/* Overview Section */}
+            <div ref={overviewSectionRef} data-pdf-section="overview">
               <EnhancedGameSummaryCard
                 opening={opening}
-                ecoCode="A00" // Could be extracted from opening data
+                ecoCode="A00"
                 accuracy={calculatedAccuracy}
                 result={result}
                 totalMoves={moveHistory.length}
@@ -934,52 +832,61 @@ const GameReview: React.FC<GameReviewProps> = ({
                 gameResult={enhancedGameResult}
                 analysis={safeAnalysis}
               />
-
-              {/* Mini Summary Block */}
               <MiniSummaryBlock analysis={safeAnalysis} />
+            </div>
 
-              {/* Graphs Section */}
+            {/* Graphs Section */}
+            <div ref={chartsSectionRef} data-pdf-section="charts">
               <GraphsCard
                 ref={moveTypesChartRef}
                 analysis={safeAnalysis}
                 playerColor={playerColor}
                 totalGameTime={totalTime}
               />
+            </div>
 
-              {/* Two-card-per-row layout for Learning and Export */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Learning Section */}
+            {/* Analytical View intentionally excludes board and move history */}
+
+            {/* Two-card-per-row layout for Learning and Export */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Learning Section */}
+              <div ref={learningSectionRef} data-pdf-section="learning">
                 <LearningImprovementCard
                   analysis={safeAnalysis}
                   onStartLesson={(url) => window.open(url, '_blank')}
                   onStartPuzzle={(url) => window.open(url, '_blank')}
                 />
-
-                {/* Puzzle Section */}
-                <PuzzleCard analysis={safeAnalysis} />
               </div>
 
-              {/* Comprehensive PDF Export Button */}
-              <ComprehensivePDFExportButton
-                analysis={safeAnalysis}
-                playerColor={playerColor}
-                opening={opening}
-                result={result}
-                totalMoves={Math.ceil(moveHistory.length / 2)}
-                accuracy={calculatedAccuracy}
-                moveHistory={moveHistory}
-                elo={elo}
-                totalTime={totalTime}
-                moveTypesChartElement={moveTypesChartRef.current}
-                accuracyByPhaseChartElement={accuracyByPhaseChartRef.current}
-                positionEvaluationChartElement={positionEvaluationChartRef.current}
-                moveRiskProfileChartElement={moveRiskProfileChartRef.current}
-              />
-
+              {/* Puzzle Section */}
+              <PuzzleCard analysis={safeAnalysis} />
             </div>
+
+            {/* Comprehensive PDF Export Button */}
+            <ComprehensivePDFExportButton
+              analysis={safeAnalysis}
+              playerColor={playerColor}
+              opening={opening}
+              result={result}
+              totalMoves={Math.ceil(moveHistory.length / 2)}
+              accuracy={calculatedAccuracy}
+              moveHistory={moveHistory}
+              elo={elo}
+              totalTime={totalTime}
+              moveTypesChartRef={moveTypesChartRef as unknown as React.RefObject<HTMLElement>}
+              accuracyByPhaseChartRef={accuracyByPhaseChartRef as unknown as React.RefObject<HTMLElement>}
+              positionEvaluationChartRef={positionEvaluationChartRef as unknown as React.RefObject<HTMLElement>}
+              moveRiskProfileChartRef={moveRiskProfileChartRef as unknown as React.RefObject<HTMLElement>}
+              overviewSectionRef={overviewSectionRef as React.RefObject<HTMLElement>}
+              finalBoardSectionRef={finalBoardSectionRef as React.RefObject<HTMLElement>}
+              moveHistorySectionRef={moveHistorySectionRef as React.RefObject<HTMLElement>}
+              chartsSectionRef={chartsSectionRef as React.RefObject<HTMLElement>}
+              learningSectionRef={learningSectionRef as React.RefObject<HTMLElement>}
+              prepareFinalBoardCapture={prepareFinalBoardCapture}
+            />
           </TabsContent>
         </Tabs>
-        
+
         {/* Mistake Replay Modal */}
         {showMistakeReplay && mistakeReplayData && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
@@ -990,10 +897,9 @@ const GameReview: React.FC<GameReviewProps> = ({
             />
           </div>
         )}
-
       </div>
     </div>
   );
 };
 
-export default GameReview; 
+export default GameReview;

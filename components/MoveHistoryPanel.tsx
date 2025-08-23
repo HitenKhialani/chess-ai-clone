@@ -1,6 +1,6 @@
 import React, { useState } from "react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import MoveExplanationTooltip from "./MoveExplanationTooltip";
-import MoveExplanationPanel from "./MoveExplanationPanel";
 
 interface ReviewMove {
   move: string;
@@ -19,6 +19,8 @@ interface MoveHistoryPanelProps {
   setCurrentMoveIdx: (idx: number) => void;
   moveHistory?: string[];
   onAnalysisUpdate?: (newAnalysis: ReviewMove[]) => void;
+  /** If true, renders a minimal read-only table without AI tabs/tooltips */
+  compact?: boolean;
 }
 
 /**
@@ -32,13 +34,31 @@ const MoveHistoryPanel: React.FC<MoveHistoryPanelProps> = ({
   setCurrentMoveIdx,
   moveHistory,
   onAnalysisUpdate,
+  compact = false,
 }) => {
   const [explanation, setExplanation] = useState<string>('');
   const [selectedMoveData, setSelectedMoveData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [mode, setMode] = useState<'stockfish' | 'ai'>(
+    'stockfish'
+  );
+  const [aiLoaded, setAiLoaded] = useState(false);
 
   const handleExplanationClick = (explanationText: string, moveData: any) => {
+    // Instead of rendering an inline explanation card here, dispatch an event
+    // so the bottom AIExplanationPanel (in GameReview) shows the details.
+    const detailMove = {
+      move: moveData.move,
+      type: moveData.moveType,
+      evaluation: moveData.evaluation,
+      moveNumber: moveData.moveNumber,
+      playerColor: moveData.playerColor,
+      fenBefore: moveData.fenBefore,
+      fenAfter: moveData.fenAfter,
+      explanation: explanationText,
+    };
+    window.dispatchEvent(new CustomEvent("move-clicked", { detail: { move: detailMove } }));
     setExplanation(explanationText);
     setSelectedMoveData(moveData);
   };
@@ -73,6 +93,7 @@ const MoveHistoryPanel: React.FC<MoveHistoryPanelProps> = ({
       if (data.analysis && Array.isArray(data.analysis)) {
         onAnalysisUpdate(data.analysis);
         setError(null);
+        setAiLoaded(true);
       } else {
         setError('Invalid analysis format returned');
       }
@@ -112,13 +133,45 @@ const MoveHistoryPanel: React.FC<MoveHistoryPanelProps> = ({
 
   return (
     <div
-      className="flex flex-col bg-card rounded-lg shadow-lg"
-      style={{ height: 400, minWidth: 320, maxWidth: 400, boxSizing: 'border-box', justifyContent: 'center' }}
+      className="flex flex-col bg-card rounded-lg shadow-lg h-full"
+      style={{ minWidth: 320, maxWidth: 400, boxSizing: 'border-box', justifyContent: 'center' }}
     >
-      <div className="font-bold text-lg mb-2 flex items-center gap-2 justify-center">Move History</div>
+      <div className="font-bold text-lg flex items-center gap-2 justify-center pt-3">Move History</div>
+      {/* Analysis mode tabs (hidden in compact mode) */}
+      {!compact && (
+        <div className="px-3 pb-2">
+          <Tabs value={mode} onValueChange={(v) => {
+            const next = (v as 'stockfish' | 'ai');
+            setMode(next);
+            if (next === 'ai' && !aiLoaded && !loading) {
+              void handleGetAIAnalysis();
+            }
+          }}>
+            <TabsList className="grid w-full grid-cols-2 rounded-lg border border-accent/30 bg-card/60 backdrop-blur supports-[backdrop-filter]:bg-card/50 overflow-hidden">
+              <TabsTrigger
+                value="stockfish"
+                className="text-xs sm:text-sm font-medium text-muted-foreground rounded-none data-[state=active]:text-foreground data-[state=active]:bg-accent/15"
+              >
+                Stockfish Analysis
+              </TabsTrigger>
+              <TabsTrigger
+                value="ai"
+                className="text-xs sm:text-sm font-medium text-muted-foreground rounded-none data-[state=active]:text-foreground data-[state=active]:bg-accent/15"
+              >
+                Get AI Analysis
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+          {error && (
+            <div className="text-red-500 text-xs mt-2 text-center max-w-full break-words">
+              {error}
+            </div>
+          )}
+        </div>
+      )}
       <div
         className="overflow-y-auto w-full"
-        style={{ flex: 1, maxHeight: 340 }}
+        style={{ flex: 1, maxHeight: 400 }}
       >
         <table className="w-full text-sm text-center">
           <thead>
@@ -151,38 +204,38 @@ const MoveHistoryPanel: React.FC<MoveHistoryPanelProps> = ({
                 {/* White Move */}
                 <td className="py-1 px-1 font-mono text-xs">
                   {pair.white ? (
-                    <MoveExplanationTooltip
-                      moveData={{
-                        move: pair.white.move,
-                        position: `After move ${pair.moveNumber * 2 - 1}`,
-                        moveType: pair.white.type,
-                        evaluation: pair.white.evaluation,
-                        moveNumber: pair.moveNumber,
-                        playerColor: 'white',
-                        fenBefore: pair.white.fenBefore,
-                        fenAfter: pair.white.fenAfter
-                      }}
-                      onExplanationClick={handleExplanationClick}
-                    >
-                      <span 
-                        className="hover:bg-accent/40 cursor-pointer block"
-                        onClick={() => {
-                          setCurrentMoveIdx(pair.moveNumber * 2 - 1);
-                          // Show AI explanation
-                          if (pair.white && pair.white.explanation) {
-                            handleExplanationClick(pair.white.explanation, {
-                              move: pair.white.move,
-                              moveType: pair.white.type,
-                              evaluation: pair.white.evaluation,
-                              moveNumber: pair.moveNumber,
-                              playerColor: 'white'
-                            });
-                          }
-                        }}
+                    compact ? (
+                      <span
+                        className="block"
+                        onClick={() => setCurrentMoveIdx(pair.moveNumber * 2 - 1)}
                       >
                         {pair.white.move}
                       </span>
-                    </MoveExplanationTooltip>
+                    ) : (
+                      <MoveExplanationTooltip
+                        moveData={{
+                          move: pair.white.move,
+                          position: `After move ${pair.moveNumber * 2 - 1}`,
+                          moveType: pair.white.type,
+                          evaluation: pair.white.evaluation,
+                          moveNumber: pair.moveNumber,
+                          playerColor: 'white',
+                          fenBefore: pair.white.fenBefore,
+                          fenAfter: pair.white.fenAfter
+                        }}
+                        onExplanationClick={handleExplanationClick}
+                      >
+                        <span 
+                          className="hover:bg-accent/40 cursor-pointer block"
+                          onClick={() => {
+                            // Only update board index here; the tooltip will fetch and dispatch explanation when ready
+                            setCurrentMoveIdx(pair.moveNumber * 2 - 1);
+                          }}
+                        >
+                          {pair.white.move}
+                        </span>
+                      </MoveExplanationTooltip>
+                    )
                   ) : (
                     '-'
                   )}
@@ -197,102 +250,64 @@ const MoveHistoryPanel: React.FC<MoveHistoryPanelProps> = ({
                 <td className="py-1 px-1 font-mono text-xs">
                   {pair.white?.evaluation || '-'}
                 </td>
-                
+
                 {/* Black Move */}
                 <td className="py-1 px-1 font-mono text-xs">
                   {pair.black ? (
-                    <MoveExplanationTooltip
-                      moveData={{
-                        move: pair.black.move,
-                        position: `After move ${pair.moveNumber * 2}`,
-                        moveType: pair.black.type,
-                        evaluation: pair.black.evaluation,
-                        moveNumber: pair.moveNumber,
-                        playerColor: 'black',
-                        fenBefore: pair.black.fenBefore,
-                        fenAfter: pair.black.fenAfter
-                      }}
-                      onExplanationClick={handleExplanationClick}
-                    >
-                      <span 
-                        className="hover:bg-accent/40 cursor-pointer block"
-                        onClick={() => {
-                          setCurrentMoveIdx(pair.moveNumber * 2);
-                          // Show AI explanation
-                          if (pair.black && pair.black.explanation) {
-                            handleExplanationClick(pair.black.explanation, {
-                              move: pair.black.move,
-                              moveType: pair.black.type,
-                              evaluation: pair.black.evaluation,
-                              moveNumber: pair.moveNumber,
-                              playerColor: 'black'
-                            });
-                          }
-                        }}
+                    compact ? (
+                      <span
+                        className="block"
+                        onClick={() => setCurrentMoveIdx(pair.moveNumber * 2)}
                       >
                         {pair.black.move}
                       </span>
-                    </MoveExplanationTooltip>
+                    ) : (
+                      <MoveExplanationTooltip
+                        moveData={{
+                          move: pair.black.move,
+                          position: `After move ${pair.moveNumber * 2}`,
+                          moveType: pair.black.type,
+                          evaluation: pair.black.evaluation,
+                          moveNumber: pair.moveNumber,
+                          playerColor: 'black',
+                          fenBefore: pair.black.fenBefore,
+                          fenAfter: pair.black.fenAfter
+                        }}
+                        onExplanationClick={handleExplanationClick}
+                      >
+                        <span 
+                          className="hover:bg-accent/40 cursor-pointer block"
+                          onClick={() => {
+                            // Only update board index here; the tooltip will fetch and dispatch explanation when ready
+                            setCurrentMoveIdx(pair.moveNumber * 2);
+                          }}
+                        >
+                          {pair.black.move}
+                        </span>
+                      </MoveExplanationTooltip>
+                    )
                   ) : (
                     '-'
                   )}
                 </td>
-                
-                {/* Black Move Type */}
-                <td className={`py-1 px-1 font-bold text-xs ${getTypeColor(pair.black?.type || '')}`}>
-                  {pair.black?.type || '-'}
-                </td>
-                
-                {/* Black Move Evaluation */}
-                <td className="py-1 px-1 font-mono text-xs">
-                  {pair.black?.evaluation || '-'}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+              
+              {/* Black Move Type */}
+              <td className={`py-1 px-1 font-bold text-xs ${getTypeColor(pair.black?.type || '')}`}>
+                {pair.black?.type || '-'}
+              </td>
+              
+              {/* Black Move Evaluation */}
+              <td className="py-1 px-1 font-mono text-xs">
+                {pair.black?.evaluation || '-'}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
       </div>
       
-      {/* AI Analysis Button */}
-      <div className="flex flex-col items-center p-3 border-t border-muted">
-        <button
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 text-sm font-medium"
-          onClick={handleGetAIAnalysis}
-          disabled={loading || !moveHistory || !onAnalysisUpdate}
-        >
-          {loading ? (
-            <div className="flex items-center gap-2">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-              Analyzing...
-            </div>
-          ) : (
-            'Get AI Analysis'
-          )}
-        </button>
-        {error && (
-          <div className="text-red-500 text-xs mt-2 text-center max-w-full break-words">
-            {error}
-          </div>
-        )}
-        {!moveHistory && (
-          <div className="text-gray-500 text-xs mt-1">
-            Move history required for AI analysis
-          </div>
-        )}
-      </div>
-      
-      {/* Move Explanation Panel */}
-      {explanation && selectedMoveData && (
-        <div className="mt-4">
-          <MoveExplanationPanel
-            explanation={explanation}
-            moveData={selectedMoveData}
-            onClose={handleCloseExplanation}
-          />
-        </div>
-      )}
+      {/* Inline explanation removed in favor of bottom AIExplanationPanel in GameReview */}
     </div>
   );
 };
-
 export default MoveHistoryPanel; 

@@ -56,11 +56,12 @@ Use double line breaks between sections and single line breaks within sections. 
         headers: {
           'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
           'HTTP-Referer': 'https://your-chess-app.com',
           'X-Title': 'Chess Move Analyzer'
         },
         body: JSON.stringify({
-          model: 'deepseek/deepseek-r1-0528:free',
+          model: 'deepseek/deepseek-chat-v3-0324:free',
           messages: [
             {
               role: 'system',
@@ -80,17 +81,33 @@ Use double line breaks between sections and single line breaks within sections. 
             clearTimeout(timeoutId);
 
       if (!response.ok) {
-        const errorData = await response.json();
+        let errorData: any = null;
+        try {
+          errorData = await response.json();
+        } catch {
+          const text = await response.text();
+          errorData = { message: text };
+        }
         console.error('OpenRouter API error:', errorData);
         return NextResponse.json({ error: 'Failed to get move explanation' }, { status: response.status });
       }
-
-      const data = await response.json();
+      // Robustly parse body even if provider returns plain text
+      const contentType = response.headers.get('content-type') || '';
+      const raw = await response.text();
+      let data: any = null;
+      try {
+        data = contentType.includes('application/json') ? JSON.parse(raw) : JSON.parse(raw);
+      } catch (e) {
+        console.warn('OpenRouter non-JSON or malformed JSON body, using raw text fallback');
+        // Return the raw text as explanation if it looks like plain text
+        const fallback = cleanMarkdownText(raw || 'Unable to generate explanation');
+        return NextResponse.json({ explanation: fallback });
+      }
       console.log('🤖 AI Response:', data);
-      console.log('🤖 Message object:', data.choices[0]?.message);
+      console.log('🤖 Message object:', data.choices?.[0]?.message);
       
       // Check for content in both 'content' and 'reasoning' fields
-      const message = data.choices[0]?.message;
+      const message = data.choices?.[0]?.message;
       let explanation = message?.content || message?.reasoning || 'Unable to generate explanation';
       
       // Clean up markdown formatting

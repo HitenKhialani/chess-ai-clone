@@ -1,5 +1,5 @@
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 import html2canvas from 'html2canvas';
 import { estimateEloFromAccuracy } from './eloEstimator';
 
@@ -50,6 +50,12 @@ interface GameReportData {
   accuracyByPhaseChartElement?: HTMLElement;
   positionEvaluationChartElement?: HTMLElement;
   moveRiskProfileChartElement?: HTMLElement;
+  // Pixel-perfect capture elements from Game Review
+  overviewElement?: HTMLElement;           // EnhancedGameSummaryCard + MiniSummaryBlock wrapper
+  finalBoardElement?: HTMLElement;         // A DOM node rendering final position board only
+  moveHistoryElement?: HTMLElement;        // MoveHistoryPanel wrapper
+  chartsElement?: HTMLElement;             // GraphsCard wrapper containing all charts
+  learningElement?: HTMLElement;           // LearningImprovementCard wrapper
 }
 
 // Function to create a chess board element and capture it as image
@@ -1222,280 +1228,178 @@ const generateGameReportPDFWithRetry = async (data: GameReportData, maxRetries: 
 
 export { generateGameReportPDFWithRetry };
 
-export default generateGameReportPDF; 
-
-// Comprehensive Game Report PDF Generator
 export const generateComprehensiveGameReportPDF = async (data: GameReportData) => {
   try {
-    console.log('Generating comprehensive PDF with data:', {
-      analysisLength: data.analysis?.length,
-      moveHistoryLength: data.moveHistory?.length,
-      playerName: data.playerName,
-      // Log chart element presence for debugging
-      analysisOverviewChartElement: !!data.analysisOverviewChartElement,
-      moveTypesChartElement: !!data.moveTypesChartElement,
-      accuracyByPhaseChartElement: !!data.accuracyByPhaseChartElement,
-      positionEvaluationChartElement: !!data.positionEvaluationChartElement,
-      moveRiskProfileChartElement: !!data.moveRiskProfileChartElement,
-    });
+    console.log('Generating comprehensive PDF (pixel-perfect mode)');
 
     const doc = new jsPDF();
 
-    // PAGE 1: Game Overview & Key Metrics
-    // Header
-    doc.setFillColor(124, 58, 237); // Purple color
-    doc.rect(0, 0, 210, 30, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(18);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Comprehensive Chess Game Analysis', 105, 18, { align: 'center' });
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    doc.text('Page 1', 190, 25, { align: 'right' });
-
-    // Game Info
-    doc.setTextColor(0, 0, 0); // Black text for content
-    doc.setFontSize(14);
-    doc.text(`Game: ${data.opening}`, 20, 45);
-    doc.text(`Result: ${data.result}`, 20, 55);
-    doc.text(`Date: ${data.date}`, 20, 65);
-
-    // Key Metrics Grid
-    doc.setFontSize(12);
-    doc.text(`Accuracy: ${data.accuracy.toFixed(2)}%`, 20, 80);
-    doc.text(`ELO: ${data.playerElo}`, 20, 90);
-    doc.text(`Total Moves: ${data.totalMoves}`, 20, 100);
-    doc.text(`Total Time: ${data.totalGameTime}s`, 20, 110);
-
-    // Move Type Summary (Textual)
-    const stats = calculateGameStats(data.analysis);
-    doc.setFontSize(12);
-    doc.text('Move Type Summary:', 20, 130);
-    doc.setTextColor(0, 128, 0); // Green
-    doc.text(`Correct: ${stats.correctMoves}`, 20, 140);
-    doc.setTextColor(255, 165, 0); // Orange
-    doc.text(`Mistakes: ${stats.mistakes}`, 20, 150);
-    doc.setTextColor(255, 0, 0); // Red
-    doc.text(`Blunders: ${stats.blunders}`, 20, 160);
-    doc.setTextColor(0, 0, 255); // Blue (for brilliant, if any)
-    doc.text(`Brilliant: ${stats.brilliantMoves}`, 20, 170);
-    doc.setTextColor(0, 0, 0); // Reset to black
-
-    // Add charts from elements
-    let currentY = 180;
-
-    // Helper function to safely format evaluation for charts
-    const safeParseFloat = (value: any): number => {
-      if (value === null || value === undefined) return 0;
-      if (typeof value === 'number') return value;
-      if (typeof value === 'string') {
-        const num = parseFloat(value);
-        return isNaN(num) ? 0 : num;
+    // Helper to avoid indefinite hangs from html2canvas or any async step
+    const withTimeout = async <T>(promise: Promise<T>, ms: number, label: string): Promise<T> => {
+      let timer: any;
+      const timeout = new Promise<never>((_, reject) => {
+        timer = setTimeout(() => reject(new Error(`Timeout after ${ms}ms: ${label}`)), ms);
+      });
+      try {
+        return await Promise.race([promise, timeout]);
+      } finally {
+        clearTimeout(timer);
       }
-      return 0;
     };
 
-    const addChartToPDF = async (element: HTMLElement | undefined, title: string, doc: jsPDF, yPos: number) => {
-      if (element) {
-        try {
-          const canvas = await html2canvas(element, { scale: 2 }); // Scale for better resolution
-          const imgData = canvas.toDataURL('image/png');
-          const imgWidth = 180; // Adjust as needed
-          const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    // Wait until an element is attached to DOM and has measurable size
+    const waitForElementReady = async (element: HTMLElement, attempts = 5, delayMs = 100) => {
+      for (let i = 0; i < attempts; i++) {
+        const connected = (element as any).isConnected ?? document.body.contains(element);
+        const { width, height } = element.getBoundingClientRect();
+        if (connected && width > 0 && height > 0) return true;
+        await new Promise(r => setTimeout(r, delayMs));
+      }
+      return false;
+    };
 
-          if (yPos + imgHeight > 280) { // Check if new page is needed
-            doc.addPage();
-            yPos = 20;
-            doc.setFontSize(10);
-            doc.text(`Page ${doc.internal.getNumberOfPages()}`, 190, 25, { align: 'right' });
+    // Capture by cloning the element into an offscreen container to avoid zero-size/hidden issues
+    const captureByClone = async (element: HTMLElement): Promise<HTMLCanvasElement> => {
+      const container = document.createElement('div');
+      container.style.position = 'absolute';
+      container.style.left = '-10000px';
+      container.style.top = '0';
+      container.style.width = element.scrollWidth ? `${Math.max(800, element.scrollWidth)}px` : '1000px';
+      container.style.background = '#ffffff';
+      container.style.padding = '0';
+      container.style.margin = '0';
+      container.style.pointerEvents = 'none';
+
+      const clone = element.cloneNode(true) as HTMLElement;
+      clone.style.removeProperty('transform');
+      clone.style.opacity = '1';
+      clone.style.display = 'block';
+      clone.style.visibility = 'visible';
+      clone.style.width = '100%';
+
+      container.appendChild(clone);
+      document.body.appendChild(container);
+      try {
+        const canvas = await withTimeout(html2canvas(container, {
+          backgroundColor: '#ffffff',
+          scale: 2,
+          useCORS: true,
+          logging: false
+        } as any), 10000, 'html2canvas clone capture');
+        return canvas;
+      } finally {
+        document.body.removeChild(container);
+      }
+    };
+
+    // Helper: add an HTMLElement to current page scaled to fit within margins
+    const addElementAsPage = async (element?: HTMLElement) => {
+      if (!element) {
+        console.warn('Expected element missing for PDF page');
+        // Add a simple placeholder to avoid blank page
+        doc.setFontSize(12);
+        doc.text('Section unavailable', 105, 150, { align: 'center' });
+        return;
+      }
+      const label = element.id || element.getAttribute('data-pdf-section') || element.className || 'unknown-section';
+      try {
+        console.log(`[PDF] Preparing capture for section: ${label}`);
+        const ready = await waitForElementReady(element, 8, 120);
+
+        // Retry html2canvas a few times in case of transient failures
+        let canvas: HTMLCanvasElement | null = null;
+        let lastErr: any = null;
+        for (let attempt = 1; attempt <= 3; attempt++) {
+          try {
+            if (ready) {
+              canvas = await withTimeout(html2canvas(element, {
+                scale: 2,
+                backgroundColor: '#ffffff',
+                useCORS: true,
+                logging: false
+              } as any), 10000, `html2canvas direct capture (${label})`);
+            } else {
+              console.warn('Element not ready (likely hidden). Using clone strategy for:', label);
+              canvas = await captureByClone(element);
+            }
+            if (canvas) break;
+          } catch (e) {
+            lastErr = e;
+            console.warn(`html2canvas attempt ${attempt} failed for ${label}:`, e);
+            await new Promise(r => setTimeout(r, attempt * 200));
           }
-
-          doc.setFontSize(14);
-          doc.text(title, 20, yPos);
-          doc.addImage(imgData, 'PNG', 15, yPos + 10, imgWidth, imgHeight);
-          return yPos + imgHeight + 20; // Return new Y position
-        } catch (chartError) {
-          console.error(`Error generating ${title} chart image:`, chartError);
-          doc.setFontSize(10);
-          doc.setTextColor(255, 0, 0);
-          doc.text(`Error loading ${title} chart.`, 20, yPos + 10);
-          doc.setTextColor(0, 0, 0);
-          return yPos + 30;
         }
+
+        if (!canvas) {
+          console.error('Failed to capture element after retries:', label, lastErr);
+          doc.setFontSize(12);
+          doc.text('Section capture failed', 105, 150, { align: 'center' });
+          return;
+        }
+
+        const imgData = canvas.toDataURL('image/png');
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
+        const margin = 10; // minimal margin to avoid clipping
+        const maxW = pageWidth - margin * 2;
+        const maxH = pageHeight - margin * 2;
+        const aspect = canvas.height / canvas.width;
+        let w = maxW;
+        let h = w * aspect;
+        if (h > maxH) {
+          h = maxH;
+          w = h / aspect;
+        }
+        const x = (pageWidth - w) / 2;
+        const y = (pageHeight - h) / 2;
+        doc.addImage(imgData, 'PNG', x, y, w, h);
+        console.log(`[PDF] Section added: ${label} (w:${w.toFixed(1)}, h:${h.toFixed(1)})`);
+      } catch (err) {
+        console.error('addElementAsPage failed:', label, err);
+        doc.setFontSize(12);
+        doc.text('Section capture error', 105, 150, { align: 'center' });
       }
-      return yPos; // No element, no change in Y
     };
 
-    // Add charts dynamically
-    currentY = await addChartToPDF(data.analysisOverviewChartElement, 'Analysis Overview', doc, currentY);
-    currentY = await addChartToPDF(data.moveTypesChartElement, 'Move Types', doc, currentY);
-    currentY = await addChartToPDF(data.accuracyByPhaseChartElement, 'Accuracy by Phase', doc, currentY);
-    currentY = await addChartToPDF(data.positionEvaluationChartElement, 'Position Evaluation', doc, currentY);
-    currentY = await addChartToPDF(data.moveRiskProfileChartElement, 'Move Risk Profile', doc, currentY);
+    // PAGE 1: Overview (exact Game Review visuals)
+    await addElementAsPage(data.overviewElement);
 
-    // PAGE 2: Detailed Move History (using jspdf-autotable)
+    // PAGE 2: Final position board only
     doc.addPage();
-    doc.setFillColor(124, 58, 237);
-    doc.rect(0, 0, 210, 30, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(18);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Detailed Move History', 105, 18, { align: 'center' });
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`Page ${doc.internal.getNumberOfPages()}`, 190, 25, { align: 'right' });
+    await addElementAsPage(data.finalBoardElement);
 
-    doc.setTextColor(0, 0, 0); // Black text for content
-    doc.setFontSize(12);
-
-    const moveTableData = [];
-    
-    // Safety check for analysis data
-    if (!data.analysis || !Array.isArray(data.analysis)) {
-      console.warn('Analysis data is missing or invalid, using empty array');
-      data.analysis = [];
-    }
-    
-    for (let i = 0; i < data.moveHistory.length; i += 2) {
-      const moveNumber = Math.floor(i / 2) + 1;
-      const whiteMove = data.moveHistory[i];
-      const blackMove = data.moveHistory[i + 1] || '';
-      const whiteAnalysis = data.analysis[i] || {};
-      const blackAnalysis = data.analysis[i + 1] || {};
-
-      // Helper function to safely format evaluation
-      const formatEvaluation = (evaluation: any): string => {
-        if (evaluation === null || evaluation === undefined) return '';
-        if (typeof evaluation === 'string') {
-          const num = parseFloat(evaluation);
-          return isNaN(num) ? evaluation : num.toFixed(2);
-        }
-        if (typeof evaluation === 'number') {
-          return evaluation.toFixed(2);
-        }
-        return String(evaluation);
-      };
-
-      moveTableData.push([
-        moveNumber.toString(),
-        whiteMove,
-        (whiteAnalysis as any)?.type || '',
-        formatEvaluation((whiteAnalysis as any)?.evaluation),
-        blackMove,
-        (blackAnalysis as any)?.type || '',
-        formatEvaluation((blackAnalysis as any)?.evaluation)
-      ]);
-    }
-
-    // Try to use autoTable, fallback to manual table if it fails
-    try {
-      (doc as any).autoTable({
-        head: [['#', 'White Move', 'Type', 'Eval', 'Black Move', 'Type', 'Eval']],
-        body: moveTableData,
-        startY: 40,
-        theme: 'grid',
-        headStyles: { fillColor: [124, 58, 237], textColor: [255, 255, 255], fontStyle: 'bold' },
-        styles: { fontSize: 9, cellPadding: 2, overflow: 'linebreak' },
-        columnStyles: {
-          0: { cellWidth: 10 },
-          1: { cellWidth: 25 },
-          2: { cellWidth: 20 },
-          3: { cellWidth: 15 },
-          4: { cellWidth: 25 },
-          5: { cellWidth: 20 },
-          6: { cellWidth: 15 },
-        },
-        didDrawPage: function (data: any) {
-          // Footer
-          let str = 'Page ' + doc.internal.getNumberOfPages();
-          doc.setFontSize(10);
-          doc.text(str, data.settings.margin.left, doc.internal.pageSize.height - 10);
-        }
-      });
-    } catch (autoTableError) {
-      console.warn('autoTable failed, using manual table:', autoTableError);
-      // Fallback: Create manual table
-      doc.setFontSize(12);
-      doc.setFont('helvetica', 'bold');
-      doc.text('Move History (Manual Format)', 20, 50);
-      
-      let yPos = 70;
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
-      
-      // Header
-      doc.setFont('helvetica', 'bold');
-      doc.text('#', 20, yPos);
-      doc.text('White Move', 35, yPos);
-      doc.text('Type', 80, yPos);
-      doc.text('Eval', 120, yPos);
-      doc.text('Black Move', 150, yPos);
-      doc.text('Type', 195, yPos);
-      doc.text('Eval', 235, yPos);
-      
-      yPos += 10;
-      doc.setFont('helvetica', 'normal');
-      
-      // Data rows
-      moveTableData.forEach((row, index) => {
-        if (yPos > 270) {
-          doc.addPage();
-          yPos = 20;
-        }
-        
-        doc.text(row[0], 20, yPos); // Move number
-        doc.text(row[1], 35, yPos); // White move
-        doc.text(row[2], 80, yPos); // White type
-        doc.text(row[3], 120, yPos); // White eval
-        doc.text(row[4], 150, yPos); // Black move
-        doc.text(row[5], 195, yPos); // Black type
-        doc.text(row[6], 235, yPos); // Black eval
-        
-        yPos += 8;
-      });
-    }
-
-    // PAGE 3: Learning Recommendations
+    // PAGE 3: Move history (exact table visuals)
     doc.addPage();
-    doc.setFillColor(124, 58, 237);
-    doc.rect(0, 0, 210, 30, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(18);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Learning Recommendations', 105, 18, { align: 'center' });
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`Page ${doc.internal.getNumberOfPages()}`, 190, 25, { align: 'right' });
+    await addElementAsPage(data.moveHistoryElement);
 
-    doc.setTextColor(0, 0, 0); // Black text for content
-    doc.setFontSize(12);
-    doc.text('Based on your game analysis, here are some recommendations:', 20, 40);
+    // PAGE 4: Charts (entire charts section as on screen)
+    doc.addPage();
+    await addElementAsPage(data.chartsElement);
 
-    let yPos = 50;
-    const addRecommendation = (text: string) => {
-      doc.text(`• ${text}`, 25, yPos);
-      yPos += 10;
-    };
+    // PAGE 5: Learning/Improvement section
+    doc.addPage();
+    await addElementAsPage(data.learningElement);
 
-    // Example recommendations (these would ideally be dynamic based on analysis)
-    addRecommendation('Focus on improving your opening theory.');
-    addRecommendation('Review games where you made blunders in the middlegame.');
-    addRecommendation('Practice tactical puzzles to sharpen your calculation.');
-    addRecommendation('Analyze your endgames more thoroughly.');
-    addRecommendation('Consider playing slower time controls to reduce mistakes.');
-
-    // Save the PDF
-    doc.save(`Chess_Game_Report_${new Date().toISOString().slice(0, 10)}.pdf`);
-    console.log('PDF generated successfully!');
+    // Save via blob to avoid any synchronous UI blocking
+    const blob = doc.output('blob');
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Chess_Game_Report_${new Date().toISOString().slice(0, 10)}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    console.log('PDF generated successfully (pixel-perfect)!');
   } catch (error) {
     console.error('Error generating comprehensive PDF:', error);
     console.error('Error details:', {
       analysisLength: data.analysis?.length,
       moveHistoryLength: data.moveHistory?.length,
       sampleAnalysis: data.analysis?.slice(0, 2),
-      errorMessage: error.message,
-      errorStack: error.stack
+      errorMessage: (error as any).message,
+      errorStack: (error as any).stack
     });
-    throw error; // Re-throw to be caught by the caller
+    throw new Error(`Comprehensive PDF generation failed: ${error.message}`);
   }
-}; 
+};

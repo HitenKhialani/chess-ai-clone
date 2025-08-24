@@ -103,6 +103,32 @@ router.get('/pgn/count', (req, res) => {
   res.json({ count: total });
 });
 
+// Route to get a PGN puzzle by theme and index (0-based, wraps around)
+router.get('/pgn/by-theme/:theme/by-index/:index', (req, res) => {
+  const { theme } = req.params;
+  let index = parseInt(req.params.index, 10);
+  const totalRow = db.prepare('SELECT COUNT(*) as count FROM pgn_puzzles WHERE LOWER(themes) LIKE ?').get(`%${theme.toLowerCase()}%`);
+  const total = totalRow ? totalRow.count : 0;
+  if (isNaN(index) || total === 0) {
+    return res.status(400).json({ error: 'Invalid index or no puzzles available for this theme' });
+  }
+  index = ((index % total) + total) % total; // wrap around
+  const puzzle = db.prepare('SELECT * FROM pgn_puzzles WHERE LOWER(themes) LIKE ? LIMIT 1 OFFSET ?').get(`%${theme.toLowerCase()}%`, index);
+  if (!puzzle) {
+    return res.status(404).json({ error: 'No puzzle found at this index for this theme' });
+  }
+  puzzle.moves = puzzle.moves.split(' ');
+  res.json(puzzle);
+});
+
+// Route to get count of PGN puzzles for a theme
+router.get('/pgn/by-theme/:theme/count', (req, res) => {
+  const { theme } = req.params;
+  const totalRow = db.prepare('SELECT COUNT(*) as count FROM pgn_puzzles WHERE LOWER(themes) LIKE ?').get(`%${theme.toLowerCase()}%`);
+  const total = totalRow ? totalRow.count : 0;
+  res.json({ count: total });
+});
+
 // Route to get a pin puzzle by index
 router.get('/pin/by-index/:index', (req, res) => {
   let index = parseInt(req.params.index, 10);

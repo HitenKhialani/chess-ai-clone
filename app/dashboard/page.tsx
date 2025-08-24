@@ -6,13 +6,12 @@ import GameReviewDisplay from '../../components/GameReviewDisplay';
 import { useTimeTracker } from '../../components/TimeTrackerProvider';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, CartesianGrid, Legend, PieChart, Pie, Cell } from 'recharts';
 import GameReview from '../../components/GameReview';
-import Image from 'next/image';
 import { useUser } from '@/components/UserProvider';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { useTheme } from "next-themes"
 import SimploChatHistory from '../../components/SimploChatHistory';
-import { Settings, Clock, Trophy, Target, Coins, User, Calendar, LogOut, Edit, TrendingUp, Activity, BarChart3 } from 'lucide-react';
+import { Settings, Clock, Trophy, Target, User, Calendar, LogOut, Edit, TrendingUp, Activity, BarChart3 } from 'lucide-react';
 
 interface GameReport {
   id: number;
@@ -29,11 +28,10 @@ export default function DashboardPage() {
   const router = useRouter();
   const { sectionTimes } = useTimeTracker();
   const [puzzlesSolved, setPuzzlesSolved] = useState<number>(0);
-  const [puzzlesByCategory, setPuzzlesByCategory] = useState<Record<string, number>>({});
+  // Removed puzzlesByCategory; we only show overall puzzles solved
   const [timeLog, setTimeLog] = useState<{ date: string; seconds: number }[]>([]);
   const [openGameReport, setOpenGameReport] = useState<null | { moves: string[], id: number }>(null);
   const { user } = useUser();
-  const [totalPuzzles, setTotalPuzzles] = useState<number | null>(null);
   const { theme } = useTheme();
   const [activeMode, setActiveMode] = useState<'profile' | 'edit' | 'settings'>('profile');
   const [showGameReports, setShowGameReports] = useState(false);
@@ -103,19 +101,7 @@ export default function DashboardPage() {
       .then(data => setPuzzlesSolved(data.puzzles_solved || 0));
   }, []);
 
-  useEffect(() => {
-    // Only run on client side
-    if (typeof window === 'undefined') return;
-    
-    const token = localStorage.getItem('token');
-    if (!token) return;
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
-    fetch(`${backendUrl}/api/users/puzzles-solved-by-category`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then(res => res.json())
-      .then(data => setPuzzlesByCategory(data || {}));
-  }, []);
+  // Removed puzzles-solved-by-category fetch; no per-type breakdown needed
 
   useEffect(() => {
     // Only run on client side
@@ -129,34 +115,6 @@ export default function DashboardPage() {
     })
       .then(res => res.json())
       .then(data => setTimeLog(Array.isArray(data) ? data : []));
-  }, []);
-
-  useEffect(() => {
-    // Only run on client side
-    if (typeof window === 'undefined') return;
-    
-    const fetchTotalPuzzles = async () => {
-      try {
-        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
-        // Fetch counts for all puzzle types and sum them
-        const endpoints = [
-          '/api/puzzles/tactics/count',
-          '/api/puzzles/endgame/count',
-          '/api/puzzles/fork/count',
-          '/api/puzzles/random/count',
-          '/api/puzzles/pin/count',
-          '/api/puzzles/pgn/count',
-        ];
-        const results = await Promise.all(
-          endpoints.map((ep) => fetch(backendUrl + ep).then(res => res.json()).catch(() => ({ count: 0 })))
-        );
-        const total = results.reduce((sum, r) => sum + (r.count || 0), 0);
-        setTotalPuzzles(total);
-      } catch (e) {
-        setTotalPuzzles(null);
-      }
-    };
-    fetchTotalPuzzles();
   }, []);
 
   // Remove duplicate games by move history (stringified) and played_at
@@ -223,10 +181,7 @@ export default function DashboardPage() {
     time: formatTime(Number(seconds))
   }));
 
-  const puzzleDistributionData = Object.entries(puzzlesByCategory).map(([category, count]) => ({
-    name: category,
-    value: count
-  }));
+  // Removed puzzle distribution data; only overall metrics are shown
 
   const timeTrendData = timeLog.map((entry, index) => ({
     day: `Day ${index + 1}`,
@@ -375,9 +330,6 @@ export default function DashboardPage() {
                 <h3 className={`text-sm font-medium mb-1 text-[var(--muted-foreground)]`}>Puzzles Solved</h3>
                 <p className={`text-3xl font-bold text-[var(--card-foreground)]`}>
                   {puzzlesSolved}
-                  {typeof totalPuzzles === 'number' && totalPuzzles > 0 && (
-                    <span className={`text-lg text-[var(--muted-foreground)]`}> / {totalPuzzles}</span>
-                  )}
                 </p>
               </div>
               
@@ -417,30 +369,7 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {/* Puzzle Distribution */}
-              <div className={`border rounded-2xl shadow-2xl p-6 bg-[var(--card)] border-[var(--border)]`}>
-                <h3 className={`text-xl font-bold mb-4 text-[var(--card-foreground)]`}>Puzzle Distribution</h3>
-                <div className="w-full h-64">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={puzzleDistributionData}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        label={({ name, value }) => `${name}: ${value}`}
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="value"
-                      >
-                        {puzzleDistributionData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
+              {/* Removed Puzzle Distribution chart */}
             </div>
 
             {/* Game Reports Section */}

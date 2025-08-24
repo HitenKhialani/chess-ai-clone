@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ThemeShowcase } from '@/components/theme-showcase';
 import { useState, useEffect } from 'react';
 import { Chess } from 'chess.js';
+import { MessageSquare, BookOpen } from 'lucide-react';
 
 const Chessboard = dynamic(
   () => import('react-chessboard').then((m) => m.Chessboard),
@@ -44,7 +45,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-16 lg:py-24">
           <div className="grid md:grid-cols-2 gap-10 items-center">
             <div>
-              <span className="inline-flex items-center gap-2 text-xs font-semibold px-3 py-1 rounded-full border border-[var(--accent)] text-[var(--primary-text)] glass-card">
+              <span className="inline-flex items-center gap-2 text-xs font-semibold px-3 py-1 rounded-full border border-[var(--accent)] text-[var(--primary-text)] bg-[var(--card)]">
                 AI-Powered Chess Training
               </span>
               <h1 className="mt-4 text-4xl sm:text-5xl font-extrabold leading-tight text-cosmic">Endgame Chess Universe</h1>
@@ -116,7 +117,7 @@ export default function HomePage() {
       <section className="relative z-10 py-12 sm:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-10">
-            <div className="inline-flex items-center gap-2 text-xs font-semibold px-3 py-1 rounded-full border border-[var(--accent)] text-[var(--primary-text)] glass-card">
+            <div className="inline-flex items-center gap-2 text-xs font-semibold px-3 py-1 rounded-full border border-[var(--accent)] text-[var(--primary-text)] bg-[var(--card)]">
               MVP Feature #1
             </div>
             <h2 className="mt-3 text-3xl sm:text-4xl font-extrabold text-cosmic">Game Analysis</h2>
@@ -128,7 +129,7 @@ export default function HomePage() {
 
           <div className="grid md:grid-cols-2 gap-6">
             {/* Accuracy Analysis */}
-            <div className="rounded-xl glass-card p-6">
+            <div className="rounded-xl p-6 bg-[var(--card)] border border-[var(--accent)]">
               <h3 className="font-semibold text-[var(--primary-text)] mb-4">Accuracy Analysis</h3>
               <div className="space-y-4">
                 <div>
@@ -153,22 +154,22 @@ export default function HomePage() {
             </div>
 
             {/* Performance Insights */}
-            <div className="rounded-xl glass-card p-6">
+            <div className="rounded-xl p-6 bg-[var(--card)] border border-[var(--accent)]">
               <h3 className="font-semibold text-[var(--primary-text)] mb-4">Performance Insights</h3>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <div className="p-4 rounded-lg bg-[var(--card)]/60 border border-[var(--border)] text-center">
+                <div className="p-4 rounded-lg bg-[var(--card)] border border-[var(--border)] text-center">
                   <div className="text-2xl font-bold text-[var(--primary-text)]">94%</div>
                   <div className="text-xs text-[var(--secondary-text)]">Opening Accuracy</div>
                 </div>
-                <div className="p-4 rounded-lg bg-[var(--card)]/60 border border-[var(--border)] text-center">
+                <div className="p-4 rounded-lg bg-[var(--card)] border border-[var(--border)] text-center">
                   <div className="text-2xl font-bold text-[var(--primary-text)]">2.3s</div>
                   <div className="text-xs text-[var(--secondary-text)]">Avg Think Time</div>
                 </div>
-                <div className="p-4 rounded-lg bg-[var(--card)]/60 border border-[var(--border)] text-center">
+                <div className="p-4 rounded-lg bg-[var(--card)] border border-[var(--border)] text-center">
                   <div className="text-2xl font-bold text-[var(--primary-text)]">3</div>
                   <div className="text-xs text-[var(--secondary-text)]">Brilliant Moves</div>
                 </div>
-                <div className="p-4 rounded-lg bg-[var(--card)]/60 border border-[var(--border)] text-center">
+                <div className="p-4 rounded-lg bg-[var(--card)] border border-[var(--border)] text-center">
                   <div className="text-2xl font-bold text-[var(--primary-text)]">+1.2</div>
                   <div className="text-xs text-[var(--secondary-text)]">Rating Change</div>
                 </div>
@@ -178,7 +179,7 @@ export default function HomePage() {
 
           {/* Move Classification + PDF note */}
           <div className="grid md:grid-cols-2 gap-6 mt-6">
-            <div className="rounded-xl glass-card p-6">
+            <div className="rounded-xl p-6 bg-[var(--card)] border border-[var(--accent)]">
               <h3 className="font-semibold text-[var(--primary-text)] mb-4">Move Classification</h3>
               <ul className="space-y-3 text-sm">
                 <li className="flex items-center justify-between"><span className="text-[var(--primary-text)]">Qf3+</span><span className="text-emerald-400">Brilliant</span></li>
@@ -187,11 +188,50 @@ export default function HomePage() {
                 <li className="flex items-center justify-between"><span className="text-[var(--primary-text)]">Kh1??</span><span className="text-rose-400">Blunder</span></li>
               </ul>
             </div>
-            <div className="rounded-xl glass-card p-6 flex flex-col justify-center">
+            <div className="rounded-xl p-6 bg-[var(--card)] border border-[var(--accent)] flex flex-col justify-center">
               <h3 className="font-semibold text-[var(--primary-text)] mb-2">Exportable Reports</h3>
               <p className="text-[var(--secondary-text)]">
                 Share your insights easily. Export your full game review as a beautifully formatted PDF report including accuracy, key moments, and move classifications.
               </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Subtle Highlights: Simplo and Learning */}
+      <section className="relative z-10 py-12 sm:py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Simplo highlight */}
+            <div className="rounded-xl p-6 bg-[var(--card)] border border-[var(--accent)] hover:shadow-lg transition-shadow">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="p-2 rounded-lg bg-gradient-to-r from-[#00F5D4]/20 to-[#57CC99]/20 border border-[#00F5D4]/30">
+                  <MessageSquare className="h-5 w-5 text-[#00F5D4]" />
+                </div>
+                <h3 className="text-lg font-semibold text-[var(--primary-text)]">Simplo AI Coach</h3>
+              </div>
+              <p className="text-sm text-[var(--secondary-text)]">Chat with an AI chess coach for quick tips, explanations, and ideas while you study or analyze.</p>
+              <div className="mt-4">
+                <Link href="/simplo">
+                  <Button className="bg-gradient-to-r from-[#00F5D4] to-[#57CC99] hover:from-[#00F5D4]/90 hover:to-[#57CC99]/90 text-[var(--card-foreground)] font-semibold">Open Simplo</Button>
+                </Link>
+              </div>
+            </div>
+
+            {/* Learning highlight */}
+            <div className="rounded-xl p-6 bg-[var(--card)] border border-[var(--accent)] hover:shadow-lg transition-shadow">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="p-2 rounded-lg bg-gradient-to-r from-[#00F5D4]/20 to-[#57CC99]/20 border border-[#00F5D4]/30">
+                  <BookOpen className="h-5 w-5 text-[#00F5D4]" />
+                </div>
+                <h3 className="text-lg font-semibold text-[var(--primary-text)]">Learning Hub</h3>
+              </div>
+              <p className="text-sm text-[var(--secondary-text)]">Curated lessons and structured courses. Study fundamentals, openings, and endgames with clarity.</p>
+              <div className="mt-4">
+                <Link href="/learn">
+                  <Button variant="outline" className="border-[var(--accent)] text-[var(--primary-text)]">Explore Learning</Button>
+                </Link>
+              </div>
             </div>
           </div>
         </div>
@@ -209,7 +249,7 @@ export default function HomePage() {
               { name: 'Advanced Bot', slug: 'advanced', difficulty: 'Hard', elo: '1600–2300', depth: '6–8', desc: 'Strong tactical play. Punishes mistakes.' },
               { name: 'More Advanced Bot', slug: 'moreadvanced', difficulty: 'Very Hard', elo: '2300–3000', depth: '9–10', desc: 'Near grandmaster level for a real challenge.' },
             ].map((b) => (
-              <div key={b.slug} className="glass-card rounded-xl p-6 hover-lift text-left flex flex-col">
+              <div key={b.slug} className="rounded-xl p-6 bg-[var(--card)] border border-[var(--accent)] hover-lift text-left flex flex-col">
                 <div className="text-sm text-[var(--secondary-text)] mb-1">{b.difficulty}</div>
                 <h3 className="text-xl font-bold text-[var(--primary-text)]">{b.name}</h3>
                 <p className="mt-2 text-sm text-[var(--secondary-text)] flex-1">{b.desc}</p>
@@ -229,7 +269,7 @@ export default function HomePage() {
       <section className="relative z-10 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-8">
-            <div className="inline-flex items-center gap-2 text-xs font-semibold px-3 py-1 rounded-full border border-[var(--accent)] text-[var(--primary-text)] glass-card">
+            <div className="inline-flex items-center gap-2 text-xs font-semibold px-3 py-1 rounded-full border border-[var(--accent)] text-[var(--primary-text)] bg-[var(--card)]">
               Customization
             </div>
             <h2 className="mt-3 text-3xl sm:text-4xl font-extrabold text-cosmic">Choose Your Universe</h2>
@@ -244,7 +284,7 @@ export default function HomePage() {
       {/* Final CTA */}
       <section className="relative z-10 py-16 lg:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="rounded-2xl glass-card p-8 md:p-12 text-center cosmic-glow">
+          <div className="rounded-2xl p-8 md:p-12 text-center cosmic-glow bg-[var(--card)] border border-[var(--accent)]">
             <h2 className="text-3xl md:text-4xl font-extrabold text-cosmic">Join the Chess Revolution</h2>
             <p className="mt-3 text-[var(--secondary-text)] max-w-2xl mx-auto">
               Train smarter, analyze deeper, and play with style. It’s free to get started.

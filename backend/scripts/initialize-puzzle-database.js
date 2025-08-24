@@ -11,7 +11,9 @@ const importScripts = [
   'import-endgame-puzzles.js',
   'import-tactics-puzzles.js',
   'import-random-puzzles.js',
-  'import-mate-in-1-puzzles.js'
+  'import-mate-in-1-puzzles.js',
+  'import-mate-in-2-puzzles.js',
+  'import-mate-in-3-puzzles.js'
 ];
 
 // Run all import scripts

@@ -7,7 +7,6 @@ const simploChatRoutes = require('./routes/simploChatRoutes');
 const db = require('./db'); // Import the SQLite database connection
 const { sanitizePGN, extractPGNMetadata } = require('./utils/pgnSanitizer'); // Import PGN sanitizer
 const pgnRoutes = require('./routes/pgnRoutes');
-const puzzleRoutes = require('./routes/puzzleRoutes');
 const analyzeGameRoute = require('./routes/analyzeGame');
 
 const app = express();
@@ -21,9 +20,7 @@ mongoose.connect(MONGODB_URI, {
 .then(() => console.log('MongoDB connected to pgn_database...'))
 .catch(err => console.error('MongoDB connection error:', err));
 
-// Initialize SQLite database on startup
-console.log('Initializing SQLite database...');
-require('./scripts/initialize-puzzle-database.js');
+// Puzzle database auto-initialization removed
 
 // Middleware
 app.use(cors({
@@ -86,7 +83,6 @@ app.use('/api/users', userRoutes);
 app.use('/api/analysis', analysisRoutes);
 app.use('/api/simplo', simploChatRoutes);
 app.use('/api/pgns', pgnRoutes);
-app.use('/api/puzzles', puzzleRoutes);
 app.use('/api/analyze-game', analyzeGameRoute);
 
 // SQLite PGN Routes

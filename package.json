@@ -8,9 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "backend": "node backend/server.js",
-    "dev-full": "node backend/scripts/clear-and-reimport-puzzles.js && npm-run-all --parallel dev backend",
-    "db:setup": "node backend/scripts/initialize-puzzle-database.js",
-    "postinstall": "npm run db:setup"
+    "dev-full": "npm-run-all --parallel dev backend",
+    "db:setup": "node backend/scripts/initialize-puzzle-database.js"
   },
   "dependencies": {
     "@emotion/is-prop-valid": "latest",

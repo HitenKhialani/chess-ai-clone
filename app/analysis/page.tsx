@@ -49,8 +49,7 @@ export default function AnalysisPage() {
   const boardRef = useRef<any>(null)
   const [savedPgns, setSavedPgns] = useState<SavedPgnMetadata[]>([]);
   const [voiceEnabled, setVoiceEnabled] = useState(false);
-  const [bestMoveCount, setBestMoveCount] = useState<number>(0);
-  const [loadingBestMoves, setLoadingBestMoves] = useState<boolean>(true);
+  
   const [showGMOptions, setShowGMOptions] = useState<boolean>(false);
   const router = useRouter();
 
@@ -484,27 +483,7 @@ export default function AnalysisPage() {
     window.speechSynthesis.speak(utterance);
   }
 
-  useEffect(() => {
-    // Fetch best move count as in dashboard
-    const token = localStorage.getItem('token');
-    if (!token) return;
-    setLoadingBestMoves(true);
-    fetch('/api/users/game-reports', {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then(res => res.json())
-      .then((games) => {
-        const uniqueGameReports = Array.from(
-          new Map((Array.isArray(games) ? games : []).map(g => [JSON.stringify(g.game_report), g])).values()
-        );
-        const totalBestMoves = uniqueGameReports.reduce((sum, game) => {
-          if (!Array.isArray(game.game_report)) return sum;
-          return sum + game.game_report.filter((move: any) => move.type === 'Best').length;
-        }, 0);
-        setBestMoveCount(totalBestMoves);
-      })
-      .finally(() => setLoadingBestMoves(false));
-  }, []);
+  
 
   return (
     <main className="min-h-screen relative overflow-hidden">
@@ -611,28 +590,17 @@ export default function AnalysisPage() {
                     Analyze with Grandmaster
                   </h3>
                   <div className="grid grid-cols-2 gap-3">
-                    {grandmasters.map((gm) => {
-                      const isDisabled = (gm === 'Viswanathan Anand' && bestMoveCount <= 50) || (gm === 'Hikaru Nakamura' && bestMoveCount < 31);
-                      return (
-                        <Button
-                          key={gm}
-                          onClick={() => {
-                            if (!isDisabled) {
-                              handleGMSelect(gm);
-                            } else {
-                              // Show condition popup for disabled buttons
-                              const requirement = gm === 'Viswanathan Anand' ? '50 moves' : '30 moves';
-                              alert(`This grandmaster requires at least ${requirement} to be analyzed. You currently have ${bestMoveCount} moves.`);
-                            }
-                          }}
-                          className={`bg-[var(--accent)] text-[var(--accent-foreground)] hover:bg-[#B5532A] border-[var(--accent)] border transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-lg text-sm font-medium py-2 px-3 h-auto flex items-center justify-center ${
-                            selectedGM === gm ? 'ring-2 ring-[var(--accent)] ring-opacity-50' : ''
-                          }`}
-                        >
-                          <span className="font-semibold text-xs">{gm}</span>
-                        </Button>
-                      );
-                    })}
+                    {grandmasters.map((gm) => (
+                    <Button
+                      key={gm}
+                      onClick={() => handleGMSelect(gm)}
+                      className={`bg-[var(--accent)] text-[var(--accent-foreground)] hover:bg-[#B5532A] border-[var(--accent)] border transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-lg text-sm font-medium py-2 px-3 h-auto flex items-center justify-center ${
+                        selectedGM === gm ? 'ring-2 ring-[var(--accent)] ring-opacity-50' : ''
+                      }`}
+                    >
+                      <span className="font-semibold text-xs">{gm}</span>
+                    </Button>
+                  ))}
                   </div>
                 </div>
               </CardContent>

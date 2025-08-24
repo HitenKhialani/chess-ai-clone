@@ -1,0 +1,48 @@
+[Event "Mate in 2 — #1"]
+[Site "Generated"]
+[Result "1-0"]
+[FEN "kr6/p1p5/2Q5/8/8/8/8/KR6 w - - 0 1"]
+
+Rxb8+ Kxb8 2. Qb7#
+
+[Event "Mate in 2 — #2"]
+[Site "Generated"]
+[Result "1-0"]
+[FEN "k7/1p6/2Q5/8/8/8/1q6/KR6 w - - 0 1"]
+
+Qxb7+ Qxb7 2. Rxb7#
+
+[Event "Mate in 2 — #3"]
+[Site "Generated"]
+[Result "1-0"]
+[FEN "r1k5/1p6/8/8/8/8/2Q5/1K6 w - - 0 1"]
+
+Qc7+ Qxc7 2. Rf8#
+
+[Event "Mate in 2 — #4"]
+[Site "Generated"]
+[Result "1-0"]
+[FEN "2k5/1p6/8/8/8/6n1/1Q6/1K1R4 w - - 0 1"]
+
+Qxb7+ Kxb7 2. Rd7#
+
+[Event "Mate in 2 — #5"]
+[Site "Generated"]
+[Result "1-0"]
+[FEN "8/1k6/8/8/1N6/8/8/K2R4 w - - 0 1"]
+
+Nc6+ Kxc6 2. Rd6#
+
+[Event "Mate in 2 — #6"]
+[Site "Generated"]
+[Result "1-0"]
+[FEN "6k1/5ppp/8/8/8/8/5Q2/K7 w - - 0 1"]
+
+Qxf7+ Kxf7 2. Rf1#
+
+[Event "Mate in 2 — #7"]
+[Site "Generated"]
+[Result "1-0"]
+[FEN "8/8/4k3/8/4B3/8/5R2/K4r2 w - - 0 1"]
+
+Bd5+ Kxd5 2. Rxf1#

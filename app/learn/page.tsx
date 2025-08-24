@@ -3,22 +3,10 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { BookOpen, Crown, ChevronRight, Play, Clock, Star, Target, Brain, Sword, Shield, Zap, Lock, CheckCircle, AlertTriangle, TrendingUp } from "lucide-react"
+import { BookOpen, Crown, ChevronRight, Play, Clock, Star, Target, Sword, Shield, Zap, CheckCircle, AlertTriangle, TrendingUp } from "lucide-react"
 import Link from "next/link"
 import { courses, Course } from "@/app/data/courses";
 import { useUser } from '@/components/UserProvider';
-import {
-	AlertDialog,
-	AlertDialogAction,
-	AlertDialogCancel,
-	AlertDialogContent,
-	AlertDialogDescription,
-	AlertDialogFooter,
-	AlertDialogHeader,
-	AlertDialogTitle,
-	AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
-import { useToast } from "@/components/ui/use-toast"
 
 interface Course {
 	slug: string;
@@ -38,42 +26,7 @@ interface Course {
 }
 
 export default function LearnPage() {
-	const { toast } = useToast();
-	const { user, unlockCourse } = useUser();
-
-	const handleUnlockCourse = async (course: Course) => {
-		if (!user) {
-			toast({
-				title: "Authentication Error",
-				description: "You must be logged in to unlock a course.",
-				variant: "destructive",
-			});
-			return;
-		}
-
-		if ((user.coins ?? 0) < 5) {
-			toast({
-				title: "Insufficient Coins",
-				description: "You do not have enough coins to unlock this course.",
-				variant: "destructive",
-			});
-			return;
-		}
-
-		try {
-			await unlockCourse(course.slug);
-			toast({
-				title: "Course Unlocked!",
-				description: `You have successfully unlocked ${course.title}.`,
-			});
-		} catch (error: any) {
-			toast({
-				title: "Unlock Failed",
-				description: error.message || "An unexpected error occurred.",
-				variant: "destructive",
-			});
-		}
-	};
+	const { user } = useUser();
 
 	// Enhanced course data with performance metrics
 	const enhancedCourses = courses.map(course => ({
@@ -90,11 +43,9 @@ export default function LearnPage() {
 	const openingsWhite = enhancedCourses.filter(c => c.category === 'Openings' && c.side === 'White').slice(0, 3);
 	const openingsBlack = enhancedCourses.filter(c => c.category === 'Openings' && c.side === 'Black').slice(0, 3);
 	const endgamesByPiece = enhancedCourses.filter(c => c.category === 'Endgames by Piece').slice(0, 3);
-	const tacticsAndStrategy = enhancedCourses.filter(c => c.category === 'Tactics' || c.category === 'Strategy').slice(0, 3);
+	// Removed Tactics & Strategy section
 
 	const renderPerformanceCard = (course: Course) => {
-		const isLocked = (course.category === 'Tactics' || course.category === 'Strategy') && !(user?.unlocked_courses ?? []).includes(course.slug);
-
 		return (
 			<Card key={course.slug} className="rounded-2xl shadow-lg bg-[var(--card)] backdrop-blur-sm border border-[var(--accent)] hover:shadow-xl transition-all duration-300 hover:scale-[1.01] overflow-hidden flex flex-col h-full">
 				<CardContent className="p-6 flex flex-col h-full">
@@ -122,37 +73,12 @@ export default function LearnPage() {
 
 					{/* Action Button */}
 					<div className="mt-auto pt-4">
-						{isLocked ? (
-							<AlertDialog>
-								<AlertDialogTrigger asChild>
-									<Button className="w-full bg-gradient-to-r from-[var(--accent)] to-[var(--accent-soft)] hover:from-[var(--accent)]/90 hover:to-[var(--accent-soft)]/90 text-[var(--card-foreground)] font-bold py-3 px-6 rounded-lg transition-all duration-300 hover:scale-105 shadow-lg">
-										<Lock className="h-4 w-4 mr-2" />
-										Unlock Course
-									</Button>
-								</AlertDialogTrigger>
-								<AlertDialogContent>
-									<AlertDialogHeader>
-										<AlertDialogTitle>Unlock Course?</AlertDialogTitle>
-										<AlertDialogDescription>
-											Do you want to unlock this course for 5 coins?
-										</AlertDialogDescription>
-									</AlertDialogHeader>
-									<AlertDialogFooter>
-										<AlertDialogCancel>Cancel</AlertDialogCancel>
-										<AlertDialogAction onClick={() => handleUnlockCourse(course)}>
-											Unlock
-										</AlertDialogAction>
-									</AlertDialogFooter>
-								</AlertDialogContent>
-							</AlertDialog>
-						) : (
-							<Link href={`/learn/courses/${course.slug}`}>
-								<Button className="w-full bg-gradient-to-r from-[var(--accent)] to-[var(--accent-soft)] hover:from-[var(--accent)]/90 hover:to-[var(--accent-soft)]/90 text-[var(--card-foreground)] font-bold py-3 px-6 rounded-lg transition-all duration-300 hover:scale-105 shadow-lg">
-									<Play className="h-4 w-4 mr-2" />
-									Start Learning
-								</Button>
-							</Link>
-						)}
+						<Link href={`/learn/courses/${course.slug}`}>
+							<Button className="w-full bg-gradient-to-r from-[var(--accent)] to-[var(--accent-soft)] hover:from-[var(--accent)]/90 hover:to-[var(--accent-soft)]/90 text-[var(--card-foreground)] font-bold py-3 px-6 rounded-lg transition-all duration-300 hover:scale-105 shadow-lg">
+								<Play className="h-4 w-4 mr-2" />
+								Start Learning
+							</Button>
+						</Link>
 					</div>
 				</CardContent>
 			</Card>
@@ -233,16 +159,6 @@ export default function LearnPage() {
 							</div>
 						</div>
 
-						{/* Tactics & Strategy */}
-						<div>
-							<h3 className="text-xl font-bold text-[var(--accent)] mb-4 flex items-center gap-2">
-								<Brain className="h-5 w-5" />
-								Tactics & Strategy
-							</h3>
-							<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-								{tacticsAndStrategy.map(course => renderPerformanceCard(course))}
-							</div>
-						</div>
 					</div>
 				</div>
 

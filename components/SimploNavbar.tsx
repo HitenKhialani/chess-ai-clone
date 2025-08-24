@@ -8,13 +8,12 @@ import { Crown, Menu, X, ChevronUp, ChevronDown } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { useRouter } from "next/navigation"
 import { useTheme } from "next-themes"
-import Image from "next/image"
+
 import { useUser } from "@/components/UserProvider"
 
 const navigation = [
   { name: "Play", href: "/play" },
   { name: "Learn", href: "/learn" },
-  { name: "Puzzles", href: "/puzzles" },
   { name: "Analysis", href: "/analysis" },
   { name: "Simplo", href: "/simplo" },
 ]
@@ -159,12 +158,6 @@ export default function SimploNavbar({ isCollapsed, onToggleCollapse }: SimploNa
                             <img src={avatarUrl} alt="avatar" className="w-8 h-8 rounded-full border-2 border-[var(--accent)]" />
                           <span className="font-semibold text-[var(--accent)] group-hover:text-[var(--accent)]/80 transition-colors flex items-center gap-1">
                   {user.displayName}
-                  {typeof user.coins === 'number' && (
-                    <>
-                      <Image src="/images/coin-icon-3835.png" alt="Coins" width={20} height={20} className="inline-block ml-1" />
-                      <span className="font-bold text-yellow-400 ml-0.5">{user.coins}</span>
-                    </>
-                  )}
                 </span>
               </button>
               {dropdownOpen && (
@@ -229,16 +222,8 @@ export default function SimploNavbar({ isCollapsed, onToggleCollapse }: SimploNa
                   {user ? (
                     <div className="flex items-center space-x-2">
                       <img src={avatarUrl} alt="avatar" className="w-8 h-8 rounded-full border-2 border-[var(--accent)]" />
-                      <span className="font-semibold text-[var(--accent)] flex items-center gap-1">
-                        {user.displayName}
-                        {typeof user.coins === 'number' && (
-                          <>
-                            <Image src="/images/coin-icon-3835.png" alt="Coins" width={20} height={20} className="inline-block ml-1" />
-                            <span className="font-bold text-yellow-400 ml-0.5">{user.coins}</span>
-                          </>
-                        )}
-                      </span>
-                                              <button
+                      <span className="font-semibold text-[var(--accent)] flex items-center gap-1">{user.displayName}</span>
+                      <button
                           className="ml-2 text-[var(--accent)] hover:text-[var(--accent)]/80 transition-colors text-sm"
                         onMouseDown={() => { setMobileMenuOpen(false); router.push('/dashboard'); }}
                       >

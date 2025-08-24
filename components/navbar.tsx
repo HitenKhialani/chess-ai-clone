@@ -6,14 +6,13 @@ import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Crown, Menu, X } from "lucide-react"
 import { useRouter } from "next/navigation"
-import Image from "next/image"
+
 import { useUser } from "@/components/UserProvider"
 import ThemeToggle from "@/components/theme-toggle"
 
 const navigation = [
   { name: "Play", href: "/play" },
   { name: "Learn", href: "/learn" },
-  { name: "Puzzles", href: "/puzzles" },
   { name: "Analysis", href: "/analysis" },
   { name: "Simplo", href: "/simplo" },
 ]
@@ -119,12 +118,6 @@ export default function Navbar() {
                 <img src={avatarUrl} alt="avatar" className="w-8 h-8 rounded-full border-2 border-[var(--accent)]" />
                 <span className="font-semibold text-[var(--primary-text)] group-hover:text-[var(--accent)] transition-colors flex items-center gap-1">
                   {user.displayName}
-                  {typeof user.coins === 'number' && (
-                    <>
-                      <Image src="/images/coin-icon-3835.png" alt="Coins" width={20} height={20} className="inline-block ml-1" />
-                      <span className="font-bold text-yellow-400 ml-0.5">{user.coins}</span>
-                    </>
-                  )}
                 </span>
               </button>
               <button
@@ -185,12 +178,6 @@ export default function Navbar() {
                         <img src={avatarUrl} alt="avatar" className="w-8 h-8 rounded-full border-2 border-[var(--accent)]" />
                         <span className="font-semibold text-[var(--primary-text)] flex items-center gap-1">
                           {user.displayName}
-                          {typeof user.coins === 'number' && (
-                            <>
-                              <Image src="/images/coin-icon-3835.png" alt="Coins" width={20} height={20} className="inline-block ml-1" />
-                              <span className="font-bold text-yellow-400 ml-0.5">{user.coins}</span>
-                            </>
-                          )}
                         </span>
                       </div>
                       <div className="space-y-2">

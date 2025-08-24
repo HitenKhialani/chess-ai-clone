@@ -1258,6 +1258,63 @@ export const generateComprehensiveGameReportPDF = async (data: GameReportData) =
       return false;
     };
 
+    // Utility: trim surrounding near-white margins from a canvas (improves centering/fill and reduces bytes)
+    const trimCanvasWhitespace = (canvas: HTMLCanvasElement, threshold = 250) => {
+      try {
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return canvas;
+        const { width, height } = canvas;
+        const imgData = ctx.getImageData(0, 0, width, height);
+        const { data: px } = imgData;
+        let top = 0, left = 0, right = width - 1, bottom = height - 1;
+
+        const isWhite = (i: number) => px[i] >= threshold && px[i + 1] >= threshold && px[i + 2] >= threshold && px[i + 3] >= 10;
+
+        // top
+        scanTop: for (; top < height; top++) {
+          for (let x = 0; x < width; x++) {
+            const i = (top * width + x) * 4;
+            if (!isWhite(i)) break scanTop;
+          }
+        }
+        // bottom
+        scanBottom: for (; bottom >= 0; bottom--) {
+          for (let x = 0; x < width; x++) {
+            const i = (bottom * width + x) * 4;
+            if (!isWhite(i)) break scanBottom;
+          }
+        }
+        // left
+        scanLeft: for (; left < width; left++) {
+          for (let y = top; y <= bottom; y++) {
+            const i = (y * width + left) * 4;
+            if (!isWhite(i)) break scanLeft;
+          }
+        }
+        // right
+        scanRight: for (; right >= 0; right--) {
+          for (let y = top; y <= bottom; y++) {
+            const i = (y * width + right) * 4;
+            if (!isWhite(i)) break scanRight;
+          }
+        }
+
+        const w = Math.max(1, right - left + 1);
+        const h = Math.max(1, bottom - top + 1);
+        if (w === width && h === height) return canvas; // nothing to trim
+
+        const out = document.createElement('canvas');
+        out.width = w;
+        out.height = h;
+        const octx = out.getContext('2d');
+        if (!octx) return canvas;
+        octx.drawImage(canvas, left, top, w, h, 0, 0, w, h);
+        return out;
+      } catch {
+        return canvas;
+      }
+    };
+
     // Capture by cloning the element into an offscreen container to avoid zero-size/hidden issues
     const captureByClone = async (element: HTMLElement): Promise<HTMLCanvasElement> => {
       const container = document.createElement('div');
@@ -1282,11 +1339,12 @@ export const generateComprehensiveGameReportPDF = async (data: GameReportData) =
       try {
         const canvas = await withTimeout(html2canvas(container, {
           backgroundColor: '#ffffff',
-          scale: 2,
+          // Lower scale to reduce bitmap size; we target ~150–200 DPI on A4
+          scale: 1.25,
           useCORS: true,
           logging: false
         } as any), 10000, 'html2canvas clone capture');
-        return canvas;
+        return trimCanvasWhitespace(canvas);
       } finally {
         document.body.removeChild(container);
       }
@@ -1313,7 +1371,8 @@ export const generateComprehensiveGameReportPDF = async (data: GameReportData) =
           try {
             if (ready) {
               canvas = await withTimeout(html2canvas(element, {
-                scale: 2,
+                // Lower scale for size; clarity remains good for print
+                scale: 1.25,
                 backgroundColor: '#ffffff',
                 useCORS: true,
                 logging: false
@@ -1337,7 +1396,9 @@ export const generateComprehensiveGameReportPDF = async (data: GameReportData) =
           return;
         }
 
-        const imgData = canvas.toDataURL('image/png');
+        // Trim and export as JPEG to significantly reduce size
+        canvas = trimCanvasWhitespace(canvas);
+        const imgData = canvas.toDataURL('image/jpeg', 0.85);
         const pageWidth = doc.internal.pageSize.getWidth();
         const pageHeight = doc.internal.pageSize.getHeight();
         const margin = 10; // minimal margin to avoid clipping
@@ -1352,12 +1413,60 @@ export const generateComprehensiveGameReportPDF = async (data: GameReportData) =
         }
         const x = (pageWidth - w) / 2;
         const y = (pageHeight - h) / 2;
-        doc.addImage(imgData, 'PNG', x, y, w, h);
+        doc.addImage(imgData, 'JPEG', x, y, w, h);
         console.log(`[PDF] Section added: ${label} (w:${w.toFixed(1)}, h:${h.toFixed(1)})`);
       } catch (err) {
         console.error('addElementAsPage failed:', label, err);
         doc.setFontSize(12);
         doc.text('Section capture error', 105, 150, { align: 'center' });
+      }
+    };
+
+    // Helper: render up to 4 charts in a strict 2×2 grid on a single page
+    const addChartsGridPage = async (charts: (HTMLElement | undefined)[]) => {
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const outerMargin = 10;
+      const gap = 6;
+      const gridW = pageWidth - outerMargin * 2;
+      const gridH = pageHeight - outerMargin * 2;
+      const cellW = (gridW - gap) / 2;
+      const cellH = (gridH - gap) / 2;
+
+      const positions = [
+        { x: outerMargin, y: outerMargin },
+        { x: outerMargin + cellW + gap, y: outerMargin },
+        { x: outerMargin, y: outerMargin + cellH + gap },
+        { x: outerMargin + cellW + gap, y: outerMargin + cellH + gap }
+      ];
+
+      for (let i = 0; i < Math.min(4, charts.length); i++) {
+        const el = charts[i];
+        if (!el) continue;
+        try {
+          let canvas = await withTimeout(html2canvas(el, {
+            backgroundColor: '#ffffff',
+            scale: 1.25,
+            useCORS: true,
+            logging: false
+          } as any), 8000, 'chart capture');
+          canvas = trimCanvasWhitespace(canvas);
+          const img = canvas.toDataURL('image/jpeg', 0.85);
+          const { x, y } = positions[i];
+          // Fit into cell while preserving aspect
+          const aspect = canvas.height / canvas.width;
+          let w = cellW;
+          let h = w * aspect;
+          if (h > cellH) { h = cellH; w = h / aspect; }
+          const cx = x + (cellW - w) / 2;
+          const cy = y + (cellH - h) / 2;
+          doc.addImage(img, 'JPEG', cx, cy, w, h);
+        } catch (e) {
+          console.warn('Chart capture failed, leaving placeholder box', e);
+          doc.setDrawColor(220);
+          const { x, y } = positions[i];
+          doc.rect(x, y, cellW, cellH);
+        }
       }
     };
 
@@ -1372,9 +1481,21 @@ export const generateComprehensiveGameReportPDF = async (data: GameReportData) =
     doc.addPage();
     await addElementAsPage(data.moveHistoryElement);
 
-    // PAGE 4: Charts (entire charts section as on screen)
+    // PAGE 4: Charts as a strict 2×2 grid (from individual chart elements when available)
     doc.addPage();
-    await addElementAsPage(data.chartsElement);
+    const gridCharts = [
+      data.analysisOverviewChartElement,
+      data.moveTypesChartElement,
+      data.accuracyByPhaseChartElement,
+      data.positionEvaluationChartElement
+    ];
+    const hasAll = gridCharts.filter(Boolean).length >= 2; // need at least some to render grid
+    if (hasAll) {
+      await addChartsGridPage(gridCharts);
+    } else {
+      // Fallback to the old single capture if individual charts are not provided
+      await addElementAsPage(data.chartsElement);
+    }
 
     // PAGE 5: Learning/Improvement section
     doc.addPage();

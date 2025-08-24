@@ -5,21 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge"
 import Link from 'next/link'
 import { 
-  Crown, 
-  Target, 
-  Zap, 
-  Brain,
-  Loader2
+  Crown
 } from 'lucide-react'
 
-// Define a type for puzzle counts
+// Define a type for puzzle counts (Mate in 1/2/3)
 type PuzzleCounts = {
-  tactics: number;
-  endgame: number;
-  fork: number;
-  random: number;
   mateIn1: number;
-  pin: number;
+  mateIn2: number;
+  mateIn3: number;
 };
 
 // Puzzle type configuration
@@ -35,58 +28,22 @@ type PuzzleType = {
   href: string;
 };
 
-// Initial puzzle counts can be set to a loading state, e.g., -1 or null
+// Initial puzzle counts
 const initialCounts: PuzzleCounts = {
-  tactics: 0,
-  endgame: 0,
-  fork: 0,
-  random: 0,
-  mateIn1: 7, // This seems to be static
-  pin: 10,     // This also seems to be static
+  mateIn1: 7,
+  mateIn2: 7,
+  mateIn3: 7,
 };
 
 export default function PuzzlesPage() {
-  const [puzzleCounts, setPuzzleCounts] = useState<PuzzleCounts>(initialCounts);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchAllPuzzleCounts = async () => {
-      try {
-        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
-        
-        // Use Promise.all to fetch all counts in parallel
-        const responses = await Promise.all([
-          fetch(`${backendUrl}/api/puzzles/tactics/count`).then(res => res.json()),
-          fetch(`${backendUrl}/api/puzzles/endgame/count`).then(res => res.json()),
-          fetch(`${backendUrl}/api/puzzles/fork/count`).then(res => res.json()),
-          fetch(`${backendUrl}/api/puzzles/random/count`).then(res => res.json()),
-        ]);
-
-        const [tacticsData, endgameData, forkData, randomData] = responses;
-
-        setPuzzleCounts(prevCounts => ({
-          ...prevCounts,
-          tactics: tacticsData.count || 0,
-          endgame: endgameData.count || 0,
-          fork: forkData.count || 0,
-          random: randomData.count || 0,
-        }));
-      } catch (error) {
-        console.error("Failed to fetch puzzle counts:", error);
-        // Keep initial counts on error
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchAllPuzzleCounts();
-  }, []);
+  const [puzzleCounts] = useState<PuzzleCounts>(initialCounts);
+  const [isLoading] = useState(false);
 
   const renderPuzzleCount = (count: number) => {
     return isLoading ? "Loading..." : `${count} puzzles`;
   };
 
-  // Puzzle configurations
+  // Puzzle configurations (Mate in 1/2/3)
   const puzzleTypes: PuzzleType[] = [
     {
       id: 'mate-in-1',
@@ -94,65 +51,32 @@ export default function PuzzlesPage() {
       description: 'Easy puzzles to practice checkmating in one move. Perfect for beginners.',
       icon: Crown,
       difficulty: 'Beginner',
-          color: 'from-[#00F5D4] to-[#57CC99]',
-    gradient: 'bg-gradient-to-br from-[#00F5D4]/20 to-[#57CC99]/20',
+      color: 'from-[#00F5D4] to-[#57CC99]',
+      gradient: 'bg-gradient-to-br from-[#00F5D4]/20 to-[#57CC99]/20',
       count: puzzleCounts.mateIn1,
       href: '/puzzles/mate-in-1'
     },
     {
-      id: 'pin',
-      title: 'Pin Tactics',
-      description: 'Practice pin tactics to win material or create threats.',
-      icon: Target,
-      difficulty: 'Beginner',
-      color: 'from-blue-500 to-cyan-500',
-      gradient: 'bg-gradient-to-br from-blue-500/20 to-cyan-500/20',
-      count: puzzleCounts.pin,
-      href: '/puzzles/pin'
-    },
-    {
-      id: 'tactics',
-      title: 'Tactical Puzzles',
-      description: 'Sharpen your tactical vision with complex combinations.',
-      icon: Brain,
+      id: 'mate-in-2',
+      title: 'Mate in 2',
+      description: 'Intermediate puzzles where you must find a forced checkmate in two moves.',
+      icon: Crown,
       difficulty: 'Intermediate',
-      color: 'from-green-500 to-emerald-500',
-      gradient: 'bg-gradient-to-br from-green-500/20 to-emerald-500/20',
-      count: puzzleCounts.tactics,
-      href: '/puzzles/tactics'
+      color: 'from-[#F59E0B] to-[#F97316]',
+      gradient: 'bg-gradient-to-br from-[#F59E0B]/20 to-[#F97316]/20',
+      count: puzzleCounts.mateIn2,
+      href: '/puzzles/mate-in-2'
     },
     {
-      id: 'endgame',
-      title: 'Endgame Mastery',
-      description: 'Practice endgames to convert winning positions.',
+      id: 'mate-in-3',
+      title: 'Mate in 3',
+      description: 'Advanced puzzles requiring precise calculation to force mate in three moves.',
       icon: Crown,
       difficulty: 'Advanced',
-      color: 'from-orange-500 to-red-500',
-      gradient: 'bg-gradient-to-br from-orange-500/20 to-red-500/20',
-      count: puzzleCounts.endgame,
-      href: '/puzzles/endgame'
-    },
-    {
-      id: 'fork',
-      title: 'Fork Tactics',
-      description: 'Master fork tactics to attack multiple pieces simultaneously.',
-      icon: Zap,
-      difficulty: 'Intermediate',
-          color: 'from-[#00F5D4] to-[#57CC99]',
-    gradient: 'bg-gradient-to-br from-[#00F5D4]/20 to-[#57CC99]/20',
-      count: puzzleCounts.fork,
-      href: '/puzzles/fork'
-    },
-    {
-      id: 'random',
-      title: 'Random Puzzles',
-      description: 'A diverse mix of puzzles to test your overall skills.',
-      icon: Brain,
-      difficulty: 'Advanced',
-      color: 'from-gray-500 to-slate-500',
-      gradient: 'bg-gradient-to-br from-gray-500/20 to-slate-500/20',
-      count: puzzleCounts.random,
-      href: '/puzzles/random'
+      color: 'from-[#EF4444] to-[#DC2626]',
+      gradient: 'bg-gradient-to-br from-[#EF4444]/20 to-[#DC2626]/20',
+      count: puzzleCounts.mateIn3,
+      href: '/puzzles/mate-in-3'
     }
   ];
 
@@ -187,8 +111,8 @@ export default function PuzzlesPage() {
         {/* Puzzle Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {isLoading ? (
-            // Skeleton loading cards
-            Array.from({ length: 6 }).map((_, index) => (
+            // Skeleton loading card
+            Array.from({ length: 1 }).map((_, index) => (
               <Card key={index} className="relative h-full overflow-hidden bg-[var(--card)]/5 backdrop-blur-xl border border-[var(--border)]/10 animate-pulse">
                 <CardHeader className="pb-4">
                   <div className="flex items-start justify-between mb-3">

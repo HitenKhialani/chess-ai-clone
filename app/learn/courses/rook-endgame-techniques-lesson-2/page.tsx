@@ -2,6 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
+import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
+import { useBoardSize } from '@/hooks/useBoardSize';
 
 const ReactChessboard = dynamic(() => import('react-chessboard').then(m => m.Chessboard), { ssr: false });
 import { Chess } from 'chess.js';
@@ -15,6 +18,7 @@ export default function RookBehindPassedPawnLesson() {
   const [game, setGame] = useState(new Chess('8/8/8/1P6/1K6/8/6k1/5r2 b - - 0 1'));
   const [moveIdx, setMoveIdx] = useState(0);
   const [autoplay, setAutoplay] = useState(false);
+  const { containerRef, width } = useBoardSize(440, 260);
 
   useEffect(() => {
     let timer;
@@ -60,61 +64,82 @@ export default function RookBehindPassedPawnLesson() {
   };
 
   return (
-    <main className="min-h-screen bg-[var(--background)] text-[var(--primary-text)] px-4 py-10 flex justify-center">
-      <div className="max-w-7xl w-full grid grid-cols-1 md:grid-cols-3 md:[grid-template-columns:1fr_1fr_1fr] gap-8 items-start">
-        {/* Left: Explanation */}
-        <div className="bg-[var(--card)] rounded-xl shadow-lg p-8 flex flex-col justify-between">
-          <div>
-            <div className="flex gap-2 mb-2">
-              <span className="bg-yellow-400 text-xs font-bold text-[var(--card-foreground)] px-2 py-1 rounded">Intermediate</span>
-              <span className="bg-[var(--primary)] text-xs font-bold text-[var(--card-foreground)] px-2 py-1 rounded">Endgame</span>
+    <main className="min-h-screen bg-[var(--background)] text-[var(--primary-text)]">
+      {/* Back Navigation Bar */}
+      <div className="bg-gradient-to-r from-stone-600 to-gray-600 text-[var(--card-foreground)] p-4 shadow-lg">
+        <div className="max-w-7xl mx-auto flex items-center">
+          <Link 
+            href="/learn/courses/rook-endgame-techniques" 
+            className="flex items-center text-[var(--card-foreground)] hover:text-stone-100 transition-colors duration-200 group"
+          >
+            <ArrowLeft className="w-5 h-5 mr-2 group-hover:-translate-x-1 transition-transform duration-200" />
+            <span className="font-bold">Back to Course</span>
+          </Link>
+        </div>
+      </div>
+      <div className="max-w-7xl mx-auto px-4 lg:px-6">
+        {/* TOP SECTION - Two Cards: Left Board, Right Explanation */}
+        <div className="min-h-[60vh] lg:min-h-[70vh] flex flex-col lg:flex-row gap-4 lg:gap-6 p-4 lg:p-6">
+          {/* LEFT CARD - Board */}
+          <div className="w-full lg:w-3/5 bg-gradient-to-br from-stone-50 to-gray-50 dark:from-stone-950/30 dark:to-gray-950/30 rounded-2xl p-6 border border-stone-200 dark:border-stone-800 shadow-xl hover:shadow-2xl transition-all duration-300 flex flex-col justify-center items-center">
+            <h3 className="text-xl font-bold mb-4 text-stone-700 dark:text-stone-300 text-center">Interactive Chess Board</h3>
+            <div className="flex justify-center items-center mb-4">
+              <div ref={containerRef} className="w-full max-w-[480px] min-w-[260px]">
+                <ReactChessboard position={game.fen()} boardWidth={width} />
+              </div>
             </div>
-            <h1 className="text-3xl font-bold mb-2">Lesson 2: Rook Behind Passed Pawn – The Golden Rule</h1>
-            <div className="mb-4">
-              <h2 className="font-bold text-base mb-1">Fundamentals (Chess Trainer Explanation)</h2>
-              <p className="mb-2">The most important rule: place your rook behind the passed pawn, whether attacking or defending. Players learn to restrict enemy pawns, support their own, and efficiently coordinate rook and king for smooth conversion.</p>
+            <div className="flex flex-wrap gap-3 justify-center mb-4">
+              <button className="px-4 py-2 bg-[var(--primary)] text-[var(--card-foreground)] rounded-lg hover:bg-[var(--primary)] disabled:opacity-50 disabled:cursor-not-allowed text-sm font-bold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200" onClick={prevMove} disabled={moveIdx === 0}>← Previous</button>
+              <button className="px-4 py-2 bg-[var(--accent)] text-[var(--card-foreground)] rounded-lg hover:bg-[var(--accent)] hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-bold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200" onClick={nextMove} disabled={moveIdx >= moves.length}>Next →</button>
+              <button className="px-4 py-2 bg-gray-600 text-[var(--card-foreground)] rounded-lg hover:bg-[var(--secondary)] text-sm font-bold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200" onClick={reset}>Reset</button>
+              <button className="px-4 py-2 bg-[var(--accent)] text-[var(--card-foreground)] rounded-lg hover:bg-[var(--accent)] hover:opacity-80 text-sm font-bold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200" onClick={replay}>Replay</button>
+              <button className="px-6 py-2 bg-[var(--primary)] text-[var(--card-foreground)] rounded-lg hover:bg-[var(--primary)] hover:opacity-80 text-sm font-bold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200" onClick={() => setAutoplay(!autoplay)}>{autoplay ? '⏸️ Pause' : '▶️ Auto-Play'}</button>
             </div>
-            <div className="mb-4">
-              <h2 className="font-bold text-base mb-1">PGN Explanation</h2>
-              <pre className="bg-[var(--background)] text-green-300 rounded p-2 text-sm overflow-x-auto">{PGN}</pre>
+            <div className="text-center mt-1 text-xs text-[var(--muted-foreground)]">Move {moveIdx} of {moves.length}</div>
+          </div>
+
+          {/* RIGHT CARD - Explanation */}
+          <div className="w-full lg:w-2/5 bg-gradient-to-br from-stone-50 to-gray-50 dark:from-stone-950/30 dark:to-gray-950/30 rounded-2xl p-6 border border-stone-200 dark:border-stone-800 shadow-xl hover:shadow-2xl transition-all duration-300 flex flex-col">
+            <div className="flex items-center mb-4">
+              <div className="w-12 h-12 bg-[var(--card)] text-[var(--card-foreground)] rounded-full flex items-center justify-center text-lg font-bold mr-3 shadow-lg">2</div>
+              <div>
+                <h2 className="text-xl font-bold text-[var(--primary)]">Rook Behind Passed Pawn</h2>
+                <div className="flex gap-2 mt-1">
+                  <span className="bg-yellow-400 text-[var(--card-foreground)] px-2 py-1 rounded text-xs font-bold shadow-md">Intermediate</span>
+                  <span className="bg-[var(--primary)] text-[var(--card-foreground)] px-2 py-1 rounded text-xs font-bold shadow-md">Endgame</span>
+                </div>
+              </div>
+            </div>
+            <div className="bg-[var(--card)] rounded-xl p-4 mb-4 shadow-lg">
+              <h3 className="font-semibold text-base mb-3">📚 Fundamentals</h3>
+              <p className="text-sm leading-relaxed">The golden rule: place your rook behind the passed pawn—attacking or defending. Restrict enemy pawns, support your own, and coordinate rook and king for smooth conversion.</p>
+            </div>
+            <div className="bg-[var(--card)] rounded-xl p-4 shadow-lg">
+              <h4 className="font-semibold mb-3 text-sm">📝 PGN Notation</h4>
+              <div className="bg-[var(--background)] text-green-300 rounded-lg p-3 shadow-inner"><div className="font-mono text-xs leading-relaxed">{PGN}</div></div>
             </div>
           </div>
         </div>
-        {/* Center: Chessboard */}
-        <div className="flex flex-col items-center justify-center">
-          <div className="bg-[var(--card)] rounded-xl shadow-lg p-6">
-            <ReactChessboard position={game.fen()} boardWidth={400} />
-            <div className="flex flex-wrap gap-2 mt-4 justify-center">
-              <button className="px-4 py-2 bg-[var(--primary)] text-[var(--card-foreground)] rounded hover:bg-[var(--primary)] disabled:opacity-50 disabled:cursor-not-allowed" onClick={prevMove} disabled={moveIdx === 0}>Previous</button>
-              <button className="px-4 py-2 bg-[var(--accent)] text-[var(--card-foreground)] rounded hover:bg-[var(--accent)] hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed" onClick={nextMove} disabled={moveIdx >= moves.length}>Next</button>
-              <button className="px-4 py-2 bg-gray-600 text-[var(--card-foreground)] rounded hover:bg-[var(--secondary)]" onClick={reset}>Reset</button>
-              <button className="px-4 py-2 bg-[var(--accent)] text-[var(--card-foreground)] rounded hover:bg-[var(--accent)] hover:opacity-80" onClick={replay}>Replay</button>
-              <button className="px-4 py-2 bg-[var(--primary)] text-[var(--card-foreground)] rounded hover:bg-[var(--primary)] hover:opacity-80" onClick={() => setAutoplay(!autoplay)}>{autoplay ? 'Pause' : 'Auto-Play'}</button>
+
+        {/* BOTTOM SECTION - Steps */}
+        <div className="min-h-[35vh] bg-gradient-to-br from-stone-50 to-gray-50 dark:from-stone-950/30 dark:to-gray-950/30 p-4 lg:p-6 rounded-2xl border-t border-stone-200 dark:border-stone-800">
+          <h3 className="text-lg font-bold mb-4 text-[var(--accent)] text-center">Step-by-Step Explanation</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="bg-[var(--card)] border-2 border-[var(--primary)] rounded-lg p-4 shadow-sm">
+              <span className="inline-block bg-[var(--primary)] text-[var(--card-foreground)] font-bold rounded-lg px-3 py-1 mb-2 text-sm shadow">Move 1</span>
+              <p className="text-sm text-[var(--muted-foreground)]">The rook moves behind the passed pawn, preparing to support or restrict it.</p>
             </div>
-            <div className="text-center mt-3 text-sm text-[var(--muted-foreground)]">
-              Move {moveIdx} of {moves.length}
+            <div className="bg-[var(--card)] border-2 border-[var(--primary)] rounded-lg p-4 shadow-sm">
+              <span className="inline-block bg-[var(--primary)] text-[var(--card-foreground)] font-bold rounded-lg px-3 py-1 mb-2 text-sm shadow">Move 2</span>
+              <p className="text-sm text-[var(--muted-foreground)]">The king approaches to help the pawn or stop the opponent's king.</p>
             </div>
-          </div>
-        </div>
-        {/* Right: Step-by-step explanation */}
-        <div className="bg-[var(--card)] rounded-xl shadow-lg p-8 flex flex-col">
-          <h2 className="font-bold text-base mb-4">Step-by-Step Explanation</h2>
-          <div className="space-y-3">
-            <div className="bg-[var(--card)] border-2 border-[var(--primary)] flex items-center rounded-lg p-4 shadow-sm">
-              <span className="inline-block bg-[var(--primary)] text-[var(--card-foreground)] font-bold rounded-lg px-4 py-2 mr-4 text-base shadow">Move 1</span>
-              <span className="text-gray-900 text-base">The rook moves behind the passed pawn, preparing to support or restrict it.</span>
+            <div className="bg-[var(--card)] border-2 border-[var(--primary)] rounded-lg p-4 shadow-sm">
+              <span className="inline-block bg-[var(--primary)] text-[var(--card-foreground)] font-bold rounded-lg px-3 py-1 mb-2 text-sm shadow">Move 3</span>
+              <p className="text-sm text-[var(--muted-foreground)]">The pawn advances, supported by the rook and king.</p>
             </div>
-            <div className="bg-[var(--card)] border-2 border-[var(--primary)] flex items-center rounded-lg p-4 shadow-sm">
-              <span className="inline-block bg-[var(--primary)] text-[var(--card-foreground)] font-bold rounded-lg px-4 py-2 mr-4 text-base shadow">Move 2</span>
-              <span className="text-gray-900 text-base">The king approaches to help the pawn or stop the opponent's king.</span>
-            </div>
-            <div className="bg-[var(--card)] border-2 border-[var(--primary)] flex items-center rounded-lg p-4 shadow-sm">
-              <span className="inline-block bg-[var(--primary)] text-[var(--card-foreground)] font-bold rounded-lg px-4 py-2 mr-4 text-base shadow">Move 3</span>
-              <span className="text-gray-900 text-base">The pawn advances, supported by the rook and king.</span>
-            </div>
-            <div className="bg-[var(--card)] border-2 border-[var(--primary)] flex items-center rounded-lg p-4 shadow-sm">
-              <span className="inline-block bg-[var(--primary)] text-[var(--card-foreground)] font-bold rounded-lg px-4 py-2 mr-4 text-base shadow">Move 4</span>
-              <span className="text-gray-900 text-base">The rook continues to support or check from behind, keeping the pawn safe.</span>
+            <div className="bg-[var(--card)] border-2 border-[var(--primary)] rounded-lg p-4 shadow-sm">
+              <span className="inline-block bg-[var(--primary)] text-[var(--card-foreground)] font-bold rounded-lg px-3 py-1 mb-2 text-sm shadow">Move 4</span>
+              <p className="text-sm text-[var(--muted-foreground)]">The rook continues to support or check from behind, keeping the pawn safe.</p>
             </div>
           </div>
         </div>

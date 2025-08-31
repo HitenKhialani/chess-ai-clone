@@ -1,5 +1,8 @@
+'use client'
+
 import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
+import { useBoardSize } from '@/hooks/useBoardSize';
 
 const ReactChessboard = dynamic(() => import('react-chessboard').then(m => m.Chessboard), { ssr: false });
 import { Chess } from 'chess.js';
@@ -14,6 +17,7 @@ export default function VancuraLesson() {
   const [game, setGame] = useState(new Chess('8/8/8/1P6/1K6/8/6k1/5r2 b - - 0 1'));
   const [moveIdx, setMoveIdx] = useState(0);
   const [autoplay, setAutoplay] = useState(false);
+  const { containerRef, width } = useBoardSize(440, 260);
 
   useEffect(() => {
     let timer: NodeJS.Timeout | undefined;
@@ -76,7 +80,9 @@ export default function VancuraLesson() {
         </div>
         {/* Right: Chessboard */}
         <div className="flex-1 flex flex-col items-center justify-center">
-          <ReactChessboard position={game.fen()} boardWidth={400} />
+          <div ref={containerRef} className="w-full max-w-[480px]">
+            <ReactChessboard position={game.fen()} boardWidth={width} />
+          </div>
           <div className="flex gap-2 mt-4">
             <button className="btn" onClick={prevMove} disabled={moveIdx === 0}>Previous</button>
             <button className="btn" onClick={nextMove} disabled={moveIdx >= moves.length}>Next</button>

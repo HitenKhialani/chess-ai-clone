@@ -9,29 +9,29 @@ export default function RookEndgameTechniquesLessonsList() {
   const lessons = [
     {
       id: 1,
-      title: "Rook Endgame Fundamentals",
-      description: "Learn the fundamental principles of rook endgames and their key characteristics.",
+      title: "Lucena Position – Build the Bridge",
+      description: "Master the Lucena technique: build a bridge to shield checks and promote.",
       duration: "40 min",
       level: "Easy",
-      concept: "Master the fundamentals of rook endgames.",
+      concept: "Build-the-bridge method to convert R+P vs R when the king leads the pawn.",
       link: "/learn/courses/rook-endgame-techniques-lesson-1"
     },
     {
       id: 2,
-      title: "Rook and Pawn vs Rook",
-      description: "Master the techniques of winning rook and pawn vs rook endgames.",
+      title: "Vancura Defense – Save with Checks",
+      description: "Defend R+P vs R with the Vancura setup and precise checking technique.",
       duration: "40 min",
       level: "Intermediate",
-      concept: "Learn winning techniques in rook and pawn vs rook endgames.",
+      concept: "Side-checking from the 3rd/6th rank to hold drawn positions vs passed rook pawn.",
       link: "/learn/courses/rook-endgame-techniques-lesson-2"
     },
     {
       id: 3,
-      title: "Advanced Rook Endgame Techniques",
-      description: "Explore advanced techniques and winning strategies in complex rook endgames.",
+      title: "Carlsen-Style Endgame Squeeze",
+      description: "Convert tiny advantages with active king, rook activity, and patient squeezing.",
       duration: "40 min",
       level: "Advanced",
-      concept: "Master advanced techniques in rook endgames.",
+      concept: "Improve slowly: create zugzwang nets, push weaknesses, and activate the king.",
       link: "/learn/courses/rook-endgame-techniques-lesson-3"
     }
   ];

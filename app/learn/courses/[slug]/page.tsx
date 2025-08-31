@@ -9,6 +9,7 @@ import ChessBoard from "@/components/chess-board"
 import { Chess } from "chess.js"
 import dynamic from "next/dynamic"
 import RookEndgameTechniquesOverview from "../rook-endgame-techniques-overview"
+import RookEndgameTechniquesLessonsList from "../rook-endgame-techniques-lessons"
 import OneE4OpeningsExplainedOverview from "../one-e4-openings-explained-overview"
 import OneE4OpeningsExplainedLessonsList from "../one-e4-openings-explained-lessons"
 import OneD4OpeningsOverview from "../one-d4-openings-overview"
@@ -476,45 +477,7 @@ export default function CourseDetailPage() {
           </TabsContent>
           <TabsContent value="lessons">
             {slug === "rook-endgame-techniques" ? (
-              <div className="max-w-2xl w-full mx-auto space-y-4">
-                {[
-                  {
-                    number: 1,
-                    title: 'Lucena Position – Build the Bridge',
-                    difficulty: 'Easy',
-                    href: '/learn/courses/rook-endgame-techniques-lesson-1',
-                  },
-                  {
-                    number: 2,
-                    title: 'Vancura Defense – Save with Checks',
-                    difficulty: 'Intermediate',
-                    href: '/learn/courses/rook-endgame-techniques-lesson-2',
-                  },
-                  {
-                    number: 3,
-                    title: 'Carlsen-Style Endgame Squeeze',
-                    difficulty: 'Advanced',
-                    href: '/learn/courses/rook-endgame-techniques-lesson-3',
-                  },
-                ].map((lesson) => (
-                  <a
-                    key={lesson.number}
-                    href={lesson.href}
-                    className="flex items-center justify-between bg-[var(--card)] border border-[var(--shadow)] rounded-lg p-5 hover:shadow-lg transition-shadow cursor-pointer"
-                  >
-                    <div>
-                      <div className="text-lg font-semibold text-[var(--primary-text)]">Lesson {lesson.number}</div>
-                      <div className="font-bold text-xl mb-1 text-[var(--primary-text)]">{lesson.title}</div>
-                      <span className="inline-block bg-[var(--accent)] text-[var(--card-foreground)] px-2 py-1 rounded text-xs font-bold">
-                        {lesson.difficulty}
-                      </span>
-                    </div>
-                    <span className="ml-4 flex items-center justify-center w-10 h-10 rounded-full bg-[var(--accent)]/20 text-[var(--accent)] hover:bg-[var(--accent)] hover:text-[var(--card-foreground)] transition-colors text-2xl font-bold">
-                      &gt;
-                    </span>
-                  </a>
-                ))}
-              </div>
+              <RookEndgameTechniquesLessonsList />
             ) : slug === "one-e4-openings-explained" ? (
               <OneE4OpeningsExplainedLessonsList />
             ) : slug === "one-d4-openings" ? (

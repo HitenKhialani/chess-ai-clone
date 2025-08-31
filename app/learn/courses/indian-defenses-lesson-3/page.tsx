@@ -101,19 +101,19 @@ export default function IndianDefensesLesson3() {
       <div className="bg-gradient-to-r from-orange-600 to-amber-600 text-[var(--card-foreground)] p-6">
         <div className="max-w-7xl mx-auto">
           <h1 className="text-3xl font-bold mb-2">
-            Lesson 3: Master Indian Defense Strategies
+            Lesson 3: Queen's Indian Defense – Positional Play
           </h1>
           <p className="text-orange-100">
-            Master advanced Indian Defense strategies
+            Explore positional play and strategic themes of the Queen's Indian.
           </p>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto">
-        {/* TOP 60% - Two Separate Cards */}
-        <div className="h-[60vh] flex gap-6 p-6">
-          {/* LEFT CARD - Chess Board (Wider) */}
-          <div className="w-3/5 bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 rounded-2xl p-6 border border-[var(--border)] dark:border-orange-800 shadow-xl hover:shadow-2xl transition-all duration-300 flex flex-col justify-center items-center">
+      <div className="max-w-7xl mx-auto px-4 lg:px-6">
+        {/* TOP SECTION */}
+        <div className="min-h-[60vh] lg:min-h-[70vh] flex flex-col lg:flex-row gap-4 lg:gap-6 p-4 lg:p-6">
+          {/* LEFT CARD - Chess Board */}
+          <div className="w-full lg:w-3/5 bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 rounded-2xl p-6 border border-[var(--border)] dark:border-orange-800 shadow-xl hover:shadow-2xl transition-all duration-300 flex flex-col justify-center items-center">
             <h3 className="text-xl font-bold mb-4 text-[var(--primary)] dark:text-orange-300 text-center">
               Interactive Chess Board
             </h3>
@@ -121,7 +121,7 @@ export default function IndianDefensesLesson3() {
             <div className="flex justify-center items-center mb-4">
               <ReactChessboard 
                 position={game.fen()} 
-                boardWidth={380}
+                boardWidth={320}
                 customBoardStyle={{
                   borderRadius: "16px",
                   boxShadow: "0 12px 32px -8px rgba(0, 0, 0, 0.3)"
@@ -178,8 +178,8 @@ export default function IndianDefensesLesson3() {
             </div>
           </div>
 
-          {/* RIGHT CARD - Explanation Panel (Narrower) */}
-          <div className="w-2/5 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-2xl p-6 border border-[var(--border)] dark:border-blue-800 shadow-xl hover:shadow-2xl transition-all duration-300 flex flex-col">
+          {/* RIGHT CARD - Explanation */}
+          <div className="w-full lg:w-2/5 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-2xl p-6 border border-[var(--border)] dark:border-blue-800 shadow-xl hover:shadow-2xl transition-all duration-300 flex flex-col">
             {/* Lesson Info */}
             <div className="flex items-center mb-4">
               <div className="w-12 h-12 bg-[var(--primary)] text-[var(--card-foreground)] rounded-full flex items-center justify-center text-lg font-bold mr-3 shadow-lg">
@@ -187,7 +187,7 @@ export default function IndianDefensesLesson3() {
               </div>
               <div>
                 <h2 className="text-xl font-bold text-[var(--primary)] dark:text-orange-300">
-                  Master Indian Defense Strategies
+                  Queen's Indian Defense
                 </h2>
                 <div className="flex gap-2 mt-1">
                   <span className="bg-[var(--primary)] text-[var(--card-foreground)] px-2 py-1 rounded text-xs font-bold shadow-md">Advanced</span>
@@ -247,8 +247,8 @@ export default function IndianDefensesLesson3() {
           </div>
         </div>
 
-        {/* BOTTOM 40% - Enhanced Step-by-Step Cards */}
-        <div className="h-[40vh] bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 p-6 rounded-t-2xl border-t-2 border-[var(--border)] dark:border-purple-800">
+        {/* BOTTOM SECTION - Steps */}
+        <div className="min-h-[40vh] lg:min-h-[30vh] bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 p-4 lg:p-6 rounded-t-2xl border-t-2 border-[var(--border)] dark:border-purple-800">
           <h3 className="text-lg font-bold mb-4 text-[var(--accent)] dark:text-purple-300 text-center">
             Step-by-Step Explanation
           </h3>

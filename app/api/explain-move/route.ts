@@ -61,7 +61,7 @@ Use double line breaks between sections and single line breaks within sections. 
           'X-Title': 'Chess Move Analyzer'
         },
         body: JSON.stringify({
-          model: 'deepseek/deepseek-chat-v3-0324:free',
+          model: 'deepseek/deepseek-r1-0528:free',
           messages: [
             {
               role: 'system',

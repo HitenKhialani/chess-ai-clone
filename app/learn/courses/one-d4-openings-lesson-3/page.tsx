@@ -106,11 +106,11 @@ export default function OneD4OpeningsLesson3() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-7xl mx-auto px-4 lg:px-6">
         {/* TOP SECTION - Responsive Two Column Layout */}
-        <div className="min-h-[60vh] layout-flexible p-responsive">
+        <div className="min-h-[60vh] lg:min-h-[70vh] flex flex-col lg:flex-row gap-4 lg:gap-6 p-4 lg:p-6">
           {/* LEFT CARD - Chess Board (Responsive Width) */}
-          <div className="w-responsive-left bg-gradient-to-br from-[var(--card)] to-[var(--secondary)] rounded-2xl p-responsive border border-[var(--border)] shadow-xl hover:shadow-2xl transition-all duration-300 flex flex-col justify-center items-center">
+          <div className="w-full lg:w-3/5 bg-gradient-to-br from-[var(--card)] to-[var(--secondary)] rounded-2xl p-6 border border-[var(--border)] shadow-xl hover:shadow-2xl transition-all duration-300 flex flex-col justify-center items-center">
             <h3 className="text-lg lg:text-xl font-bold mb-4 text-[var(--accent)] text-center">
               Interactive Chess Board
             </h3>
@@ -118,7 +118,7 @@ export default function OneD4OpeningsLesson3() {
             <div className="flex justify-center items-center mb-4">
               <ReactChessboard
                 position={game.fen()}
-                boardWidth={380}
+                boardWidth={320}
                 customBoardStyle={{
                   borderRadius: "16px",
                   boxShadow: "0 12px 32px -8px rgba(0, 0, 0, 0.3)"
@@ -126,30 +126,30 @@ export default function OneD4OpeningsLesson3() {
               />
             </div>
 
-            {/* Enhanced Move Controls - Responsive Layout */}
-            <div className="flex flex-wrap gap-responsive justify-center mb-4 w-full">
+            {/* Move Controls */}
+            <div className="flex flex-wrap gap-3 justify-center mb-4 w-full">
               <button
-                className="btn-responsive bg-[var(--primary)] text-[var(--primary-foreground)] rounded-lg hover:bg-[var(--primary)] hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 flex-1 min-w-[80px] max-w-[120px]"
+                className="px-4 py-2 bg-[var(--primary)] text-[var(--primary-foreground)] rounded-lg hover:bg-[var(--primary)] hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
                 onClick={prevMove}
                 disabled={moveIdx === 0}
               >
                 ← Previous
               </button>
               <button
-                className="btn-responsive bg-[var(--accent)] text-[var(--primary-foreground)] rounded-lg hover:bg-[var(--accent)] hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 flex-1 min-w-[80px] max-w-[120px]"
+                className="px-4 py-2 bg-[var(--accent)] text-[var(--primary-foreground)] rounded-lg hover:bg-[var(--accent)] hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
                 onClick={nextMove}
                 disabled={moveIdx >= moves.length}
               >
                 Next →
               </button>
               <button
-                className="btn-responsive bg-[var(--muted)] text-[var(--primary-foreground)] rounded-lg hover:bg-[var(--muted)] font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 flex-1 min-w-[80px] max-w-[120px]"
+                className="px-4 py-2 bg-[var(--muted)] text-[var(--primary-foreground)] rounded-lg hover:bg-[var(--muted)] text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
                 onClick={reset}
               >
                 Reset
               </button>
               <button
-                className="btn-responsive bg-[var(--primary)] text-[var(--primary-foreground)] rounded-lg hover:bg-[var(--primary)] hover:opacity-80 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 flex-1 min-w-[80px] max-w-[120px]"
+                className="px-4 py-2 bg-[var(--primary)] text-[var(--primary-foreground)] rounded-lg hover:bg-[var(--primary)] hover:opacity-80 text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
                 onClick={replay}
               >
                 Replay
@@ -158,7 +158,7 @@ export default function OneD4OpeningsLesson3() {
 
             <div className="flex gap-3 justify-center mb-4 w-full">
               <button
-                className="btn-responsive-lg bg-[var(--highlight)] text-[var(--primary-foreground)] rounded-lg hover:bg-[var(--highlight)] hover:opacity-80 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 w-full max-w-[200px]"
+                className="px-6 py-2 bg-[var(--highlight)] text-[var(--primary-foreground)] rounded-lg hover:bg-[var(--highlight)] hover:opacity-80 text-sm font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
                 onClick={() => setAutoplay(!autoplay)}
               >
                 {autoplay ? '⏸️ Pause' : '▶️ Auto-Play'}
@@ -176,7 +176,7 @@ export default function OneD4OpeningsLesson3() {
           </div>
 
           {/* RIGHT CARD - Explanation Panel (Responsive Width) */}
-          <div className="w-responsive-right bg-gradient-to-br from-[var(--card)] to-[var(--secondary)] rounded-2xl p-responsive border border-[var(--border)] shadow-xl hover:shadow-2xl transition-all duration-300 flex flex-col">
+          <div className="w-full lg:w-2/5 bg-gradient-to-br from-[var(--card)] to-[var(--secondary)] rounded-2xl p-6 border border-[var(--border)] shadow-xl hover:shadow-2xl transition-all duration-300 flex flex-col">
             {/* Lesson Info */}
             <div className="flex items-center mb-4">
               <div className="w-10 lg:w-12 h-10 lg:h-12 bg-[var(--primary)] text-[var(--primary-foreground)] rounded-full flex items-center justify-center text-base lg:text-lg font-bold mr-3 shadow-lg">
@@ -251,13 +251,13 @@ export default function OneD4OpeningsLesson3() {
         </div>
 
         {/* BOTTOM SECTION - Enhanced Step-by-Step Cards with Better Responsiveness */}
-        <div className="min-h-[40vh] bg-gradient-to-br from-[var(--card)] to-[var(--secondary)] p-responsive rounded-t-2xl border-t-2 border-[var(--border)]">
-          <h3 className="text-responsive-lg font-bold mb-4 text-[var(--accent)] text-center">
+        <div className="min-h-[40vh] lg:min-h-[30vh] bg-gradient-to-br from-[var(--card)] to-[var(--secondary)] p-4 lg:p-6 rounded-t-2xl border-t-2 border-[var(--border)]">
+          <h3 className="text-lg font-bold mb-4 text-[var(--accent)] text-center">
             Step-by-Step Explanation
           </h3>
 
-          {/* Responsive Grid Layout for Cards */}
-          <div className="grid-responsive gap-responsive-lg">
+          {/* Horizontal Scroll Cards */}
+          <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-blue-300 scrollbar-track-blue-100">
             {moveExplanations.map((explanation, index) => (
               <div
                 key={index}
@@ -269,7 +269,7 @@ export default function OneD4OpeningsLesson3() {
                   setGame(newGame);
                   setMoveIdx(index + 1);
                 }}
-                className={`bg-[var(--card)] rounded-xl p-3 lg:p-4 cursor-pointer transition-all duration-300 hover:shadow-xl transform hover:scale-105 border-2 ${
+                className={`flex-shrink-0 w-72 lg:w-80 xl:w-96 bg-[var(--card)] rounded-xl p-3 lg:p-4 cursor-pointer transition-all duration-300 hover:shadow-xl transform hover:scale-105 border-2 ${
                   index === moveIdx - 1 
                     ? 'ring-2 ring-[var(--ring)] shadow-xl border-[var(--ring)]' 
                     : 'hover:ring-1 hover:ring-[var(--ring)] border-transparent hover:border-[var(--border)]'

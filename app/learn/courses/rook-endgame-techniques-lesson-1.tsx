@@ -1,5 +1,8 @@
+'use client'
+
 import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
+import { useBoardSize } from '@/hooks/useBoardSize';
 
 const ReactChessboard = dynamic(() => import('react-chessboard').then(m => m.Chessboard), { ssr: false });
 import { Chess } from 'chess.js';
@@ -14,6 +17,7 @@ export default function LucenaLesson() {
   const [game, setGame] = useState(new Chess('8/8/8/8/8/2k5/2P5/2K5 w - - 0 1'));
   const [moveIdx, setMoveIdx] = useState(0);
   const [autoplay, setAutoplay] = useState(false);
+  const { containerRef, width } = useBoardSize(440, 260);
 
   useEffect(() => {
     let timer: NodeJS.Timeout | undefined;
@@ -75,15 +79,17 @@ export default function LucenaLesson() {
           </div>
         </div>
         {/* Right: Chessboard */}
-        <div className="flex-1 flex flex-col items-center justify-center">
-          <ReactChessboard position={game.fen()} boardWidth={400} />
-          <div className="flex gap-2 mt-4">
-            <button className="btn" onClick={prevMove} disabled={moveIdx === 0}>Previous</button>
-            <button className="btn" onClick={nextMove} disabled={moveIdx >= moves.length}>Next</button>
-            <button className="btn" onClick={reset}>Reset</button>
-            <button className="btn" onClick={replay}>Replay</button>
-            <button className="btn" onClick={() => setAutoplay(!autoplay)}>{autoplay ? 'Pause' : 'Auto-Play'}</button>
+        <div className="flex justify-center items-center mb-4">
+          <div ref={containerRef} className="w-full max-w-[480px]">
+            <ReactChessboard position={game.fen()} boardWidth={width} customBoardStyle={{ borderRadius: '16px', boxShadow: '0 12px 32px -8px rgba(0,0,0,0.3)' }} />
           </div>
+        </div>
+        <div className="flex gap-2 mt-4">
+          <button className="btn" onClick={prevMove} disabled={moveIdx === 0}>Previous</button>
+          <button className="btn" onClick={nextMove} disabled={moveIdx >= moves.length}>Next</button>
+          <button className="btn" onClick={reset}>Reset</button>
+          <button className="btn" onClick={replay}>Replay</button>
+          <button className="btn" onClick={() => setAutoplay(!autoplay)}>{autoplay ? 'Pause' : 'Auto-Play'}</button>
         </div>
       </div>
     </main>

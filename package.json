@@ -69,7 +69,6 @@
     "next": "14.1.0",
     "next-auth": "^4.24.11",
     "next-themes": "^0.4.4",
-    "nodemailer": "^7.0.5",
     "pgn-parser": "^2.2.1",
     "react": "^18.2.0",
     "react-chessboard": "^4.7.3",

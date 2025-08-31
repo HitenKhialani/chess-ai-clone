@@ -6,6 +6,10 @@ export function cleanMarkdownText(text: string): string {
   if (!text) return text;
   
   return text
+    // Remove DeepSeek R1 reasoning blocks like <think>...</think>
+    .replace(/<think>[\s\S]*?<\/think>/gi, '')
+    // Remove any remaining XML/HTML-like tags
+    .replace(/<[^>]+>/g, '')
     .replace(/\*\*/g, '') // Remove bold markers
     .replace(/^- /g, '') // Remove bullet points at start of lines
     .replace(/\n- /g, '\n') // Remove bullet points in middle of text

@@ -105,11 +105,11 @@ export default function OneD4OpeningsLesson1() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto">
-        {/* TOP 60% - Two Separate Cards */}
-        <div className="h-[60vh] flex gap-6 p-6">
-          {/* LEFT CARD - Chess Board (Wider) */}
-          <div className="w-3/5 bg-gradient-to-br from-[var(--card)] to-[var(--secondary)] rounded-2xl p-6 border border-[var(--border)] shadow-xl hover:shadow-2xl transition-all duration-300 flex flex-col justify-center items-center">
+      <div className="max-w-7xl mx-auto px-4 lg:px-6">
+        {/* TOP SECTION - Two Separate Cards */}
+        <div className="min-h-[60vh] lg:min-h-[70vh] flex flex-col lg:flex-row gap-4 lg:gap-6 p-4 lg:p-6">
+          {/* LEFT CARD - Chess Board */}
+          <div className="w-full lg:w-3/5 bg-gradient-to-br from-[var(--card)] to-[var(--secondary)] rounded-2xl p-6 border border-[var(--border)] shadow-xl hover:shadow-2xl transition-all duration-300 flex flex-col justify-center items-center">
             <h3 className="text-xl font-bold mb-4 text-[var(--accent)] text-center">
               Interactive Chess Board
             </h3>
@@ -117,7 +117,7 @@ export default function OneD4OpeningsLesson1() {
             <div className="flex justify-center items-center mb-4">
               <ReactChessboard
                 position={game.fen()}
-                boardWidth={380}
+                boardWidth={320}
                 customBoardStyle={{
                   borderRadius: "16px",
                   boxShadow: "0 12px 32px -8px rgba(0, 0, 0, 0.3)"
@@ -174,8 +174,8 @@ export default function OneD4OpeningsLesson1() {
             </div>
           </div>
 
-          {/* RIGHT CARD - Explanation Panel (Narrower) */}
-          <div className="w-2/5 bg-gradient-to-br from-[var(--card)] to-[var(--secondary)] rounded-2xl p-6 border border-[var(--border)] shadow-xl hover:shadow-2xl transition-all duration-300 flex flex-col">
+          {/* RIGHT CARD - Explanation Panel */}
+          <div className="w-full lg:w-2/5 bg-gradient-to-br from-[var(--card)] to-[var(--secondary)] rounded-2xl p-6 border border-[var(--border)] shadow-xl hover:shadow-2xl transition-all duration-300 flex flex-col">
             {/* Lesson Info */}
             <div className="flex items-center mb-4">
               <div className="w-12 h-12 bg-[var(--primary)] text-[var(--primary-foreground)] rounded-full flex items-center justify-center text-lg font-bold mr-3 shadow-lg">
@@ -247,8 +247,8 @@ export default function OneD4OpeningsLesson1() {
           </div>
         </div>
 
-        {/* BOTTOM 40% - Enhanced Step-by-Step Cards */}
-        <div className="h-[40vh] bg-gradient-to-br from-[var(--card)] to-[var(--secondary)] p-6 rounded-t-2xl border-t-2 border-[var(--border)]">
+        {/* BOTTOM SECTION - Enhanced Step-by-Step Cards */}
+        <div className="min-h-[40vh] lg:min-h-[30vh] bg-gradient-to-br from-[var(--card)] to-[var(--secondary)] p-4 lg:p-6 rounded-t-2xl border-t-2 border-[var(--border)]">
           <h3 className="text-lg font-bold mb-4 text-[var(--accent)] text-center">
             Step-by-Step Explanation
           </h3>
@@ -264,7 +264,7 @@ export default function OneD4OpeningsLesson1() {
                   setGame(newGame);
                   setMoveIdx(index + 1);
                 }}
-                className={`flex-shrink-0 w-80 bg-[var(--card)] rounded-xl p-4 cursor-pointer transition-all duration-300 hover:shadow-xl transform hover:scale-105 border-2 ${
+                className={`flex-shrink-0 w-72 lg:w-80 xl:w-96 bg-[var(--card)] rounded-xl p-4 cursor-pointer transition-all duration-300 hover:shadow-xl transform hover:scale-105 border-2 ${
                   index === moveIdx - 1
                     ? 'ring-2 ring-[var(--ring)] shadow-xl border-[var(--ring)]'
                     : 'hover:ring-1 hover:ring-blue-300 border-transparent hover:border-[var(--border)]'
@@ -272,7 +272,7 @@ export default function OneD4OpeningsLesson1() {
               >
                 <div className="flex items-center mb-3">
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center text-[var(--primary-foreground)] font-bold mr-3 shadow-lg ${
-                    index === moveIdx - 1 ? 'bg-[var(--primary)]' : 'bg-[var(--card)]0'
+                    index === moveIdx - 1 ? 'bg-[var(--primary)]' : 'bg-[var(--card)]'
                   }`}>
                     {index + 1}
                   </div>

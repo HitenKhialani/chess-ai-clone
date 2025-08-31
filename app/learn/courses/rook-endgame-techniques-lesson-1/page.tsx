@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
+import { useBoardSize } from '@/hooks/useBoardSize';
 
 const ReactChessboard = dynamic(() => import('react-chessboard').then(m => m.Chessboard), { ssr: false });
 import { Chess } from 'chess.js';
@@ -34,6 +35,7 @@ export default function RookEndgameTechniquesLesson() {
   const [game, setGame] = useState(new Chess());
   const [moveIdx, setMoveIdx] = useState(0);
   const [autoplay, setAutoplay] = useState(false);
+  const { containerRef, width } = useBoardSize(440, 260);
 
   useEffect(() => {
     let timer: NodeJS.Timeout | undefined;
@@ -115,14 +117,16 @@ export default function RookEndgameTechniquesLesson() {
             </h3>
             
             <div className="flex justify-center items-center mb-4">
-              <ReactChessboard 
-                position={game.fen()} 
-                boardWidth={380}
-                customBoardStyle={{
-                  borderRadius: "16px",
-                  boxShadow: "0 12px 32px -8px rgba(0, 0, 0, 0.3)"
-                }}
-              />
+              <div ref={containerRef} className="w-full max-w-[480px] min-w-[260px]">
+                <ReactChessboard 
+                  position={game.fen()} 
+                  boardWidth={width}
+                  customBoardStyle={{
+                    borderRadius: "16px",
+                    boxShadow: "0 12px 32px -8px rgba(0, 0, 0, 0.3)"
+                  }}
+                />
+              </div>
             </div>
 
             {/* Enhanced Move Controls */}

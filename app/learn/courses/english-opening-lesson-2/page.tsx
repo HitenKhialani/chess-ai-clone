@@ -105,11 +105,11 @@ export default function EnglishOpeningLesson2() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-7xl mx-auto px-4 lg:px-6">
         {/* TOP 60% - Two Separate Cards */}
-        <div className="h-[60vh] flex gap-6 p-6">
+        <div className="min-h-[60vh] lg:min-h-[70vh] flex flex-col lg:flex-row gap-4 lg:gap-6 p-4 lg:p-6">
           {/* LEFT CARD - Chess Board (Wider) */}
-          <div className="w-3/5 bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-950/30 dark:to-yellow-950/30 rounded-2xl p-6 border border-[var(--border)] dark:border-amber-800 shadow-xl hover:shadow-2xl transition-all duration-300 flex flex-col justify-center items-center">
+          <div className="w-full lg:w-3/5 bg-gradient-to-br from-amber-50 to-yellow-50 dark:from-amber-950/30 dark:to-yellow-950/30 rounded-2xl p-6 border border-[var(--border)] dark:border-amber-800 shadow-xl hover:shadow-2xl transition-all duration-300 flex flex-col justify-center items-center">
             <h3 className="text-xl font-bold mb-4 text-[var(--primary)] dark:text-amber-300 text-center">
               Interactive Chess Board
             </h3>
@@ -117,7 +117,7 @@ export default function EnglishOpeningLesson2() {
             <div className="flex justify-center items-center mb-4">
               <ReactChessboard 
                 position={game.fen()} 
-                boardWidth={380}
+                boardWidth={320}
                 customBoardStyle={{
                   borderRadius: "16px",
                   boxShadow: "0 12px 32px -8px rgba(0, 0, 0, 0.3)"
@@ -175,7 +175,7 @@ export default function EnglishOpeningLesson2() {
           </div>
 
           {/* RIGHT CARD - Explanation Panel (Narrower) */}
-          <div className="w-2/5 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-2xl p-6 border border-[var(--border)] dark:border-blue-800 shadow-xl hover:shadow-2xl transition-all duration-300 flex flex-col">
+          <div className="w-full lg:w-2/5 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-2xl p-6 border border-[var(--border)] dark:border-blue-800 shadow-xl hover:shadow-2xl transition-all duration-300 flex flex-col">
             {/* Lesson Info */}
             <div className="flex items-center mb-4">
               <div className="w-12 h-12 bg-[var(--primary)] text-[var(--card-foreground)] rounded-full flex items-center justify-center text-lg font-bold mr-3 shadow-lg">
@@ -243,8 +243,8 @@ export default function EnglishOpeningLesson2() {
           </div>
         </div>
 
-        {/* BOTTOM 40% - Enhanced Step-by-Step Cards */}
-        <div className="h-[40vh] bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 p-6 rounded-t-2xl border-t-2 border-[var(--border)] dark:border-purple-800">
+        {/* BOTTOM - Enhanced Step-by-Step Cards (Responsive) */}
+        <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 p-4 lg:p-6 rounded-t-2xl border-t-2 border-[var(--border)] dark:border-purple-800">
           <h3 className="text-lg font-bold mb-4 text-[var(--accent)] dark:text-purple-300 text-center">
             Step-by-Step Explanation
           </h3>
@@ -261,20 +261,20 @@ export default function EnglishOpeningLesson2() {
                   setGame(newGame);
                   setMoveIdx(index + 1);
                 }}
-                className={`flex-shrink-0 w-80 bg-[var(--card)] dark:bg-[var(--card)] rounded-xl p-4 cursor-pointer transition-all duration-300 hover:shadow-xl transform hover:scale-105 border-2 ${
+                className={`flex-shrink-0 w-72 lg:w-80 xl:w-96 bg-[var(--card)] dark:bg-[var(--card)] rounded-xl p-4 cursor-pointer transition-all duration-300 hover:shadow-xl transform hover:scale-105 border-2 ${
                   index === moveIdx - 1 
-                    ? 'ring-2 ring-blue-500 shadow-xl border-blue-300' 
+                    ? 'ring-2 ring-[var(--ring)] shadow-xl border-[var(--ring)]' 
                     : 'hover:ring-1 hover:ring-purple-300 border-transparent hover:border-[var(--border)]'
                 }`}
               >
                 <div className="flex items-center mb-3">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center text-[var(--accent-foreground)] font-bold mr-3 shadow-lg ${
-                    index === moveIdx - 1 ? 'bg-[var(--card)]0' : 'bg-[var(--accent)]'
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center text-[var(--primary-foreground)] font-bold mr-3 shadow-lg ${
+                    index === moveIdx - 1 ? 'bg-[var(--primary)]' : 'bg-[var(--card)]'
                   }`}>
                     {index + 1}
                   </div>
                   <h4 className={`font-semibold ${
-                    index === moveIdx - 1 ? 'text-[var(--primary)] dark:text-blue-300' : 'text-[var(--card-foreground)] dark:text-[var(--muted-foreground)]'
+                    index === moveIdx - 1 ? 'text-[var(--accent)]' : 'text-[var(--muted-foreground)]'
                   }`}>
                     Move {index + 1}
                   </h4>
